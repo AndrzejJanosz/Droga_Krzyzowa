@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SiYoutubemusic } from "react-icons/si";
 import { MdFileDownload, MdPlayArrow, MdPause } from "react-icons/md";
+import rozwazania from '../assets/Considerations/rozwazania.pdf';
+import stacja1 from '../assets/Considerations/stacja1.mp3';
+
 
 const ConsiderationsPage = () => {
   // Przykładowe dane stacji
   const [stations, setStations] = useState([
-    { id: 1, name: "Stacja I - Pan Jezus na śmierć skazany", audioSrc: "/assets/audio/stacja1.mp3", duration: 235 },
+    { id: 1, name: "Stacja I - Pan Jezus na śmierć skazany", audioSrc: stacja1, duration: 219 },
     { id: 2, name: "Stacja II - Pan Jezus bierze krzyż na swoje ramiona", audioSrc: "/assets/audio/stacja2.mp3", duration: 198 },
     { id: 3, name: "Stacja III - Pan Jezus upada po raz pierwszy", audioSrc: "/assets/audio/stacja3.mp3", duration: 210 },
     { id: 4, name: "Stacja IV - Pan Jezus spotyka swoją Matkę", audioSrc: "/assets/audio/stacja4.mp3", duration: 223 },
@@ -118,6 +121,16 @@ const ConsiderationsPage = () => {
     return stations.find(station => station.id === currentlyPlaying);
   };
 
+  // Funkcja do pobierania pliku PDF
+  const handleDownloadPDF = () => {
+    const link = document.createElement('a');
+    link.href = rozwazania;
+    link.download = 'rozwazania.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="relative flex flex-col items-center min-h-screen px-4 py-16 overflow-hidden bg-gradient-to-b from-gray-900 via-gray-900 to-indigo-950">
       {/* Subtelne tło z efektem */}
@@ -144,13 +157,12 @@ const ConsiderationsPage = () => {
             Poniżej znajdziesz rozważania drogi krzyżowej do samodzielnego odtworzenia lub pobrania.
           </p>
           
-          <a 
-            href="/assets/rozwazania.pdf" 
-            download
+          <button 
+            onClick={handleDownloadPDF}
             className="inline-flex items-center px-8 py-3 mb-8 font-medium text-white transition-all duration-300 transform bg-purple-600 rounded-lg shadow-md hover:bg-purple-700 hover:shadow-lg shadow-purple-500/20 hover:-translate-y-1"
           >
-            <MdFileDownload className="mr-2 text-xl" /> Pobierz rozważania
-          </a>
+            <MdFileDownload className="mr-2 text-xl" /> Pobierz rozważania PDF
+          </button>
         </div>
         
         {/* Lista stacji */}

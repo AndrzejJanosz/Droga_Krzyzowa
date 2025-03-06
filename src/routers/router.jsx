@@ -6,6 +6,7 @@ import ConsiderationsPage from "../pages/ConsiderationsPage";
 import NavigationPage from "../pages/NavigationPage";
 
 
+
 const router = createBrowserRouter([
     {
       path: "/",
