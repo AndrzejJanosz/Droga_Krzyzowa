@@ -255,7 +255,7 @@ const NavigationPage = () => {
           isRouteListOpen ? 'top-0 bottom-0' : 'top-0 -translate-y-full h-0'
         }`}
       >
-        <div className="px-4 py-6">
+        <div className="px-4 py-20">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-white">Wybierz trasę</h1>
             <button 
@@ -307,7 +307,7 @@ const NavigationPage = () => {
           </div>
           
           {/* Location tracking button */}
-          <div className="absolute z-10 flex flex-col gap-3 bottom-6 right-6">
+          <div className="absolute z-10 flex flex-col gap-3 bottom-36 right-6">
             <button
               onClick={centerMapOnUser}
               disabled={!userLocation}
