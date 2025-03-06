@@ -14,8 +14,8 @@ import { MdMyLocation, MdClose, MdArrowBack } from "react-icons/md";
 
 // Import KML files
 import roadKML1 from '../assets/Roads/road1.kml';
-// import roadKML2 from '../assets/Roads/road2.kml';
-// import roadKML3 from '../assets/Roads/road3.kml';
+import roadKML2 from '../assets/Roads/road2.kml';
+ import roadKML3 from '../assets/Roads/road3.kml';
 // import roadKML4 from '../assets/Roads/road4.kml';
 // import roadKML5 from '../assets/Roads/road5.kml';
 // import roadKML6 from '../assets/Roads/road6.kml';
@@ -28,9 +28,9 @@ import roadKML1 from '../assets/Roads/road1.kml';
 const NavigationPage = () => {
   // Routes data
   const roads = [
-    { id: 1, name: "Droga na Pańską Górę", track: roadKML1 }//,
-    // { id: 2, name: "Trasa przez Inwałd", track: roadKML2 },
-    // { id: 3, name: "Szlak pod Czarny Groń", track: roadKML3 },
+    { id: 1, name: "Franciszek", track: roadKML1 },
+     { id: 2, name: "Stanisława", track: roadKML2 },
+    { id: 3, name: "Teresy", track: roadKML3 }//,
     // { id: 4, name: "Droga leśna w Targanicach", track: roadKML4 },
     // { id: 5, name: "Ścieżka przez Zagórnik", track: roadKML5 },
     // { id: 6, name: "Trasa przez Rzyki", track: roadKML6 },
