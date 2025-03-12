@@ -1,52 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { MdDownloadForOffline } from "react-icons/md";
-// Import wszystkich PDF-ów
-import roadPDF1 from '../assets/Roads/road1.pdf';
-// import roadPDF2 from '../assets/Roads/road2.pdf';
-// import roadPDF3 from '../assets/Roads/road3.pdf';
-// import roadPDF4 from '../assets/Roads/road4.pdf';
-// import roadPDF5 from '../assets/Roads/road5.pdf';
-// import roadPDF6 from '../assets/Roads/road6.pdf';
-// import roadPDF7 from '../assets/Roads/road7.pdf';
-// import roadPDF8 from '../assets/Roads/road8.pdf';
-// import roadPDF9 from '../assets/Roads/road9.pdf';
-// import roadPDF10 from '../assets/Roads/road10.pdf';
-// import roadPDF11 from '../assets/Roads/road11.pdf';
-
-// Import wszystkich KML
-import roadKML1 from '../assets/Roads/road1.kml';
-// import roadKML2 from '../assets/Roads/road2.kml';
-// import roadKML3 from '../assets/Roads/road3.kml';
-// import roadKML4 from '../assets/Roads/road4.kml';
-// import roadKML5 from '../assets/Roads/road5.kml';
-// import roadKML6 from '../assets/Roads/road6.kml';
-// import roadKML7 from '../assets/Roads/road7.kml';
-// import roadKML8 from '../assets/Roads/road8.kml';
-// import roadKML9 from '../assets/Roads/road9.kml';
-// import roadKML10 from '../assets/Roads/road10.kml';
-// import roadKML11 from '../assets/Roads/road11.kml';
+import roads from '../assets/data/roadsData';
+import { Eye, Map, Download } from "lucide-react";
 
 const RoadPage = () => {
-  // Przykładowe dane dróg krzyżowych
-  const [roads, setRoads] = useState([
-    { 
-      id: 1, 
-      name: "Droga na Pańską Górę", 
-      description: roadPDF1, 
-      track: roadKML1
-    },
-    { id: 2, name: "Trasa przez Inwałd", description: "road2.pdf", track: "road2.kml" },
-    { id: 3, name: "Szlak pod Czarny Groń", description: "road3.pdf", track: "road3.kml" },
-    { id: 4, name: "Droga leśna w Targanicach", description: "road4.pdf", track: "road4.kml" },
-    { id: 5, name: "Ścieżka przez Zagórnik", description: "road5.pdf", track: "road5.kml" },
-    { id: 6, name: "Trasa przez Rzyki", description: "road6.pdf", track: "road6.kml" },
-    { id: 7, name: "Szlak Roczyn-Brzezinka", description: "road7.pdf", track: "road7.kml" },
-    { id: 8, name: "Droga przez Sułkowice", description: "road8.pdf", track: "road8.kml" },
-    { id: 9, name: "Ścieżka w dolinie Wieprzówki", description: "road9.pdf", track: "road9.kml" },
-    { id: 10, name: "Trasa Kaczyna-Chocznię", description: "road10.pdf", track: "road10.kml" },
-    { id: 11, name: "Droga przez stary Andrychów", description: "road11.pdf", track: "road11.kml" },
-  ]);
-  
   // Stan przechowujący ID otwartej/rozwiniętej drogi
   const [expandedRoadId, setExpandedRoadId] = useState(null);
 
@@ -122,26 +79,42 @@ const RoadPage = () => {
                 
                 {/* Rozwijane opcje pobierania */}
                 <div 
-                  className="grid grid-cols-2 gap-2 p-3 transition-all duration-300 border-t bg-gray-700/30 border-purple-500/10"
+                  className="transition-all duration-300 border-t bg-gray-700/30 border-purple-500/10"
                   style={{ 
-                    maxHeight: expandedRoadId === road.id ? '100px' : '0',
+                    maxHeight: expandedRoadId === road.id ? '200px' : '0',
                     opacity: expandedRoadId === road.id ? 1 : 0,
                     overflow: 'hidden',
                     padding: expandedRoadId === road.id ? '12px' : '0 12px'
                   }}
                 >
-                  <button 
-                    onClick={() => handleDownload(road.description, `road${road.id}.pdf`)}
-                    className="flex items-center justify-center w-full p-3 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50 hover:-translate-y-1"
-                  >
-                    Opis
-                  </button>
-                  <button 
-                    onClick={() => handleDownload(road.track, `road${road.id}.kml`)}
-                    className="flex items-center justify-center w-full p-3 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50 hover:-translate-y-1"
-                  >
-                    Ślad
-                  </button>
+                  {/* Informacje o trasie */}
+                  <div className="mb-3 text-sm text-gray-200">
+                    <p className="mb-1"><span className="font-medium">Przebieg trasy:</span> {road.shortdescription}</p>
+                    <p><span className="font-medium">Dystans:</span> {road.KM}<> km</></p>
+                  </div>
+                  
+                  {/* Przyciski pobierania */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <button 
+                      onClick={() => handleDownload(road.description, `road${road.id}.pdf`)}
+                      className="flex items-center justify-center w-full p-3 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50 hover:-translate-y-1"
+                    >
+                      <Download className="w-4 h-4 mr-2" /> Opis
+                    </button>
+                    <button 
+                      onClick={() => handleDownload(road.track, `road${road.id}.kml`)}
+                      className="flex items-center justify-center w-full p-3 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50 hover:-translate-y-1"
+                    >
+                      <Download className="w-4 h-4 mr-2" />Ślad
+                    </button>
+                      {/* Podgląd */}
+                    <button 
+                      //onClick={() => handlePreview(road)}
+                      className="flex items-center justify-center w-full p-3 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-blue-600/30 border-blue-500/30 hover:bg-blue-600/50 hover:-translate-y-1"
+                    >
+                      <Eye className="w-5 h-5 mr-0" />  Podgląd
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

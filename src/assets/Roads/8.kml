@@ -2,11 +2,11 @@
 <kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
   <Document>
     <name>GPS device</name>
-    <snippet>Created Mon Feb 22 14:15:46 2021</snippet>
+    <snippet>Created Sun Mar 3 17:54:16 2024</snippet>
     <LookAt>
       <longitude>19.294452</longitude>
       <latitude>49.816978</latitude>
-      <range>22283.085015</range>
+      <range>22283.110777</range>
     </LookAt>
     <!-- Normal track style -->
     <Style id="track_n">
@@ -176,7 +176,7 @@
     <Folder>
       <name>Tracks</name>
       <Folder>
-        <name>Trasa św. Stanisława 2021</name>
+        <name>tr. sw Stanislawa</name>
         <Placemark>
           <name>Path</name>
           <styleUrl>#lineStyle</styleUrl>
@@ -982,19 +982,8 @@
 19.354906,49.851986,405.45
 19.354402,49.851979,398.85
 19.353994,49.852098,392.50
-19.353147,49.852387,384.62
-19.352717,49.852760,377.98
-19.352310,49.852892,372.05
-19.351977,49.853148,364.80
-19.351441,49.853369,361.25
-19.351140,49.853708,357.93
-19.350690,49.853964,354.25
-19.350250,49.854040,353.15
-19.349960,49.853985,351.48
-19.349697,49.854013,349.93
-19.349563,49.854130,348.18
-19.349821,49.854351,347.40
-19.350191,49.854493,346.93
+19.353289,49.852347,384.62
+19.354018,49.853530,364.80
 19.349981,49.854607,346.32
 19.351226,49.855143,346.65
 19.351269,49.855299,346.80

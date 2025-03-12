@@ -13,9 +13,9 @@ import 'ol/ol.css';
 import { MdMyLocation, MdClose, MdArrowBack } from "react-icons/md";
 
 // Import KML files
-import roadKML1 from '../assets/Roads/road1.kml';
-import roadKML2 from '../assets/Roads/road2.kml';
- import roadKML3 from '../assets/Roads/road3.kml';
+import roadKML1 from '../assets/Roads/1.kml';
+import roadKML2 from '../assets/Roads/2.kml';
+ import roadKML3 from '../assets/Roads/3.kml';
 // import roadKML4 from '../assets/Roads/road4.kml';
 // import roadKML5 from '../assets/Roads/road5.kml';
 // import roadKML6 from '../assets/Roads/road6.kml';

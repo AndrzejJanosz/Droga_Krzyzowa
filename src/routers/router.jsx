@@ -4,6 +4,7 @@ import HomePage from "../pages/HomePage";
 import RoadPage from "../pages/RoadPage";
 import ConsiderationsPage from "../pages/ConsiderationsPage";
 import NavigationPage from "../pages/NavigationPage";
+import Test from "../pages/Test";
 
 
 
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
       {
         path: "/nawigacja",
         element: <NavigationPage />,
+      },
+      {
+        path: "/test",
+        element: <Test />,
       },
       {
         path: "/rozwazania",
