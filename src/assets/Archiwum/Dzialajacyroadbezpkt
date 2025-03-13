@@ -24,7 +24,7 @@ let DefaultIcon = L.icon({
 
 // DODANO: Ikony dla początku, końca i stacji
 let StartIcon = L.icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
   shadowUrl: iconShadow,
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -32,7 +32,7 @@ let StartIcon = L.icon({
 });
 
 let EndIcon = L.icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
   shadowUrl: iconShadow,
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -51,7 +51,7 @@ let StationIcon = L.icon({
 L.Marker.prototype.options.icon = DefaultIcon;
 
 
-const RoadPage = () => {
+const Test = () => {
   // Stan przechowujący ID otwartej/rozwiniętej drogi
   const [expandedRoadId, setExpandedRoadId] = useState(null);
   const [showMap, setShowMap] = useState(false);
@@ -113,84 +113,19 @@ const RoadPage = () => {
             coordinates = feature.geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
           }
         }
-
-                // DODANO: Dla punktów (Placemarks)
-                if (feature.geometry && feature.geometry.type === 'Point') {
-                  const coord = feature.geometry.coordinates;
-                  extractedWaypoints.push({
-                    position: [coord[1], coord[0]],
-                    name: feature.properties.name || 'Punkt',
-                    description: feature.properties.description || '',
-                    type: determinePointType(feature.properties.name || '')
-                  });
-                }
       });
       
-            // DODANO: Jeśli nie znaleziono punktów, utwórz je z linii
-            if (extractedWaypoints.length === 0 && coordinates.length > 0) {
-              // Dodaj punkt startu
-              extractedWaypoints.push({
-                position: coordinates[0],
-                name: 'Start',
-                description: 'Punkt początkowy trasy',
-                type: 'start'
-              });
-              
-              // Dodaj stacje drogi
-              for (let i = 1; i < coordinates.length - 1; i++) {
-                // Dodaj tylko co n-ty punkt jako stację - można dostosować
-                if (i % Math.ceil(coordinates.length / 15) === 0) {
-                  extractedWaypoints.push({
-                    position: coordinates[i],
-                    name: `Stacja ${Math.ceil(i / (coordinates.length / 14))}`,
-                    description: `Stacja drogi krzyżowej`,
-                    type: 'station'
-                  });
-                }
-              }
-              
-              // Dodaj punkt końcowy
-              extractedWaypoints.push({
-                position: coordinates[coordinates.length - 1],
-                name: 'Koniec',
-                description: 'Punkt końcowy trasy',
-                type: 'end'
-              });
-            }
-            
       setTrackData(coordinates);
-      setWaypoints(extractedWaypoints);
     } catch (error) {
       console.error('Błąd parsowania KML:', error);
-      // ZMODYFIKOWANO: W przypadku błędu, dodaj też przykładowe punkty
-      const fallbackTrack = [
+      // W przypadku błędu, użyj przykładowych danych dla Andrychowa
+      setTrackData([
         [49.8546, 19.3438], // Andrychów
         [49.8776, 19.3092], // przykładowe punkty
         [49.8658, 19.6753]
-      ];
-      
-      setTrackData(fallbackTrack);
-      // DODANO: Ustaw przykładowe punkty
-      setWaypoints([
-        { position: fallbackTrack[0], name: 'Start', description: 'Punkt początkowy', type: 'start' },
-        { position: fallbackTrack[1], name: 'Stacja 7', description: 'Stacja drogi krzyżowej', type: 'station' },
-        { position: fallbackTrack[2], name: 'Koniec', description: 'Punkt końcowy', type: 'end' }
       ]);
     }
   };
-
-    // DODANO: Funkcja do określania typu punktu na podstawie nazwy
-    const determinePointType = (name) => {
-      const lowerName = name.toLowerCase();
-      if (lowerName.includes('start') || lowerName.includes('początek')) {
-        return 'start';
-      } else if (lowerName.includes('koniec') || lowerName.includes('meta')) {
-        return 'end';
-      } else {
-        return 'station';
-      }
-    };
-  
 
   // Funkcja do podglądu trasy na mapie
   const handlePreview = (road) => {
@@ -204,11 +139,10 @@ const RoadPage = () => {
     setShowMap(false);
     setSelectedRoad(null);
     setTrackData(null);
-    setWaypoints([]);
   };
 
   // Komponent KmlTrack do wyświetlania śladu KML na mapie
-  const KmlTrack = ({ trackData, waypoints }) => {
+  const KmlTrack = ({ trackData }) => {
     const map = useMap();
     
     useEffect(() => {
@@ -222,47 +156,14 @@ const RoadPage = () => {
       }
     }, [map, trackData]);
 
-    const getMarkerIcon = (type) => {
-      switch (type) {
-        case 'start':
-          return StartIcon;
-        case 'end':
-          return EndIcon;
-        case 'station':
-          return StationIcon;
-        default:
-          return DefaultIcon;
-      }
-    };
-
-    return (
-      <>
-        {trackData && trackData.length > 0 && (
-          <Polyline 
-            positions={trackData} 
-            color="#8b5cf6" 
-            weight={5} 
-            opacity={0.8}
-          />
-        )}
-        
-        {/* DODANO: Wyświetlanie punktów/markerów */}
-        {waypoints && waypoints.map((waypoint, index) => (
-          <Marker 
-            key={index}
-            position={waypoint.position}
-            icon={getMarkerIcon(waypoint.type)}
-          >
-            <Popup>
-              <div>
-                <h3 className="font-bold">{waypoint.name}</h3>
-                <p>{waypoint.description}</p>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </>
-    );
+    return trackData && trackData.length > 0 ? (
+      <Polyline 
+        positions={trackData} 
+        color="#8b5cf6" 
+        weight={5} 
+        opacity={0.8}
+      />
+    ) : null;
   };
 
   return (
@@ -360,7 +261,6 @@ const RoadPage = () => {
         ) : (
           // Widok mapy po kliknięciu Podgląd
           <div className="w-full transition-all duration-700 opacity-0 fade-in">
-            
             {/* Przycisk powrotu */}
             <div className="flex items-center justify-between mb-4">
               <button 
@@ -389,7 +289,6 @@ const RoadPage = () => {
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 {trackData && <KmlTrack trackData={trackData} />}
-                {trackData && <KmlTrack trackData={trackData} waypoints={waypoints} />}
               </MapContainer>
             </div>
             
@@ -428,11 +327,10 @@ const RoadPage = () => {
         )}
       </div>
       
-      
       {/* Dekoracyjny element na dole */}
       <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black to-transparent opacity-40"></div>
     </div>
   );
 };
 
-export default RoadPage;
+export default Test;

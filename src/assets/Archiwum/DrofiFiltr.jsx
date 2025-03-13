@@ -1,9 +1,11 @@
+//komponent nie wdrożony zawierający filtry które jeszcez nie działają w pełni: należy uruchomić z przestrzeni PAGES
+
 import React, { useState, useEffect } from 'react';
 import { MdDownloadForOffline } from "react-icons/md";
 import roads from '../assets/data/roadsData';
 import { Eye, Map, Download, Filter, Search, MapPin, RotateCw, RefreshCw, ArrowRight, CheckCircle, X, Sliders } from "lucide-react";
 
-const Test = () => {
+const xxx = () => {
   // Stan przechowujący ID otwartej/rozwiniętej drogi
   const [expandedRoadId, setExpandedRoadId] = useState(null);
   
@@ -34,9 +36,7 @@ const Test = () => {
   }, []);
 
   // Efekt do filtrowania dróg
-  useEffect(() => {
-    applyFilters();
-  }, [filters]); 
+
 
   // Funkcja do przełączania rozwinięcia opcji pobierania
   const toggleRoadExpand = (roadId) => {
@@ -66,40 +66,50 @@ const Test = () => {
       maxDistance: 100
     });
     setFilteredRoads(roads);
+     // Odświeżenie całej strony
+  //window.location.reload();
   };
 
   // Funkcja do aplikowania filtrów
-  const applyFilters = () => {
-    let results = roads;
-    
-    // Filtrowanie po nazwie
-    if (filters.name) {
-      results = results.filter(road => 
-        road.name.toLowerCase().includes(filters.name.toLowerCase())
-      );
-    }
-    
-    // Filtrowanie po miejscu docelowym
-    if (filters.destination) {
-      results = results.filter(road => 
-        road.destination === filters.destination
-      );
-    }
-    
-    // Filtrowanie po powrocie do punktu startowego
-    if (filters.returnToStart !== null) {
-      results = results.filter(road => 
-        road.loop === filters.returnToStart
-      );
-    }
-    
-    // Filtrowanie po dystansie
+  // Funkcja do aplikowania filtrów
+const applyFilters = () => {
+  
+  let results = [...roads];
+  
+  // Filtrowanie po nazwie
+  if (filters.name) {
     results = results.filter(road => 
-      road.KM >= filters.minDistance && road.KM <= filters.maxDistance
+      road.name.toLowerCase().includes(filters.name.toLowerCase())
     );
-    
-    setFilteredRoads(results);
-  };
+  }
+  
+  // Filtrowanie po miejscu docelowym
+  if (filters.destination) {
+    results = results.filter(road => 
+      road.destination === filters.destination
+    );
+  }
+  
+  // Filtrowanie po powrocie do punktu startowego
+  if (filters.returnToStart !== null) {
+    results = results.filter(road => 
+      road.loop === filters.returnToStart
+    );
+  }
+  
+  // Filtrowanie po dystansie
+  results = results.filter(road => 
+    road.KM >= filters.minDistance && road.KM <= filters.maxDistance
+  );
+  
+  // Ustawienie nowych wyników i wymuszenie renderowania
+  setFilteredRoads([...results]);
+  
+  // Można dodać małe opóźnienie i ponowne ustawienie, aby upewnić się, że React zaktualizuje DOM
+  setTimeout(() => {
+    setFilteredRoads([...results]);
+  }, 10);
+};
 
   // Funkcja do pobierania plików
   const handleDownload = (file, filename) => {
@@ -396,4 +406,4 @@ const Test = () => {
   );
 };
 
-export default Test;
+export default xxx;

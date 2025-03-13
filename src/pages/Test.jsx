@@ -1,28 +1,66 @@
 import React, { useState, useEffect } from 'react';
 import { MdDownloadForOffline } from "react-icons/md";
 import roads from '../assets/data/roadsData';
-import { Eye, Map, Download, Filter, Search, MapPin, RotateCw, RefreshCw, ArrowRight, CheckCircle, X, Sliders } from "lucide-react";
+import { Eye, Map, Download, ArrowLeft } from "lucide-react";
+import { useNavigate } from 'react-router-dom';
+
+// Import map components
+import { MapContainer, TileLayer, useMap, Polyline, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import * as L from 'leaflet';
+import toGeoJSON from '@mapbox/togeojson';
+
+// DODANO: Rozwiązanie problemu z ikonami Leaflet w React
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+let DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34]
+});
+
+// DODANO: Ikony dla początku, końca i stacji
+let StartIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34]
+});
+
+let EndIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34]
+});
+
+let StationIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34]
+});
+
+// DODANO: Ustawienie domyślnej ikony
+L.Marker.prototype.options.icon = DefaultIcon;
+
 
 const Test = () => {
   // Stan przechowujący ID otwartej/rozwiniętej drogi
   const [expandedRoadId, setExpandedRoadId] = useState(null);
+  const [showMap, setShowMap] = useState(false);
+  const [selectedRoad, setSelectedRoad] = useState(null);
+  const [trackData, setTrackData] = useState(null);
+  const [waypoints, setWaypoints] = useState([]);
   
-  // Stan dla filtrów
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [filters, setFilters] = useState({
-    name: '',
-    destination: '',
-    returnToStart: null,
-    minDistance: 0,
-    maxDistance: 100
-  });
+  const navigate = useNavigate();
   
-  // Stan dla przefiltrowanych dróg
-  const [filteredRoads, setFilteredRoads] = useState(roads);
-
-  // Lista unikalnych miejsc docelowych dla selecta
-  const uniqueDestinations = [...new Set(roads.map(road => road.destination))];
-
   // Efekt do animacji pojawiania się elementów
   useEffect(() => {
     const elements = document.querySelectorAll('.fade-in');
@@ -31,83 +69,12 @@ const Test = () => {
         element.classList.add('active');
       }, 50 * index);
     });
-  }, []);
-
-  // Efekt do filtrowania dróg
-
+  }, [showMap]);
 
   // Funkcja do przełączania rozwinięcia opcji pobierania
   const toggleRoadExpand = (roadId) => {
     setExpandedRoadId(prevId => prevId === roadId ? null : roadId);
   };
-
-  // Funkcja do przełączania widoczności filtrów
-  const toggleFilters = () => {
-    setIsFilterOpen(prev => !prev);
-  };
-
-  // Funkcja do aktualizacji filtrów
-  const handleFilterChange = (name, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  // Funkcja do resetowania filtrów
-  const resetFilters = () => {
-    setFilters({
-      name: '',
-      destination: '',
-      returnToStart: null,
-      minDistance: 0,
-      maxDistance: 100
-    });
-    setFilteredRoads(roads);
-     // Odświeżenie całej strony
-  //window.location.reload();
-  };
-
-  // Funkcja do aplikowania filtrów
-  // Funkcja do aplikowania filtrów
-const applyFilters = () => {
-  
-  let results = [...roads];
-  
-  // Filtrowanie po nazwie
-  if (filters.name) {
-    results = results.filter(road => 
-      road.name.toLowerCase().includes(filters.name.toLowerCase())
-    );
-  }
-  
-  // Filtrowanie po miejscu docelowym
-  if (filters.destination) {
-    results = results.filter(road => 
-      road.destination === filters.destination
-    );
-  }
-  
-  // Filtrowanie po powrocie do punktu startowego
-  if (filters.returnToStart !== null) {
-    results = results.filter(road => 
-      road.loop === filters.returnToStart
-    );
-  }
-  
-  // Filtrowanie po dystansie
-  results = results.filter(road => 
-    road.KM >= filters.minDistance && road.KM <= filters.maxDistance
-  );
-  
-  // Ustawienie nowych wyników i wymuszenie renderowania
-  setFilteredRoads([...results]);
-  
-  // Można dodać małe opóźnienie i ponowne ustawienie, aby upewnić się, że React zaktualizuje DOM
-  setTimeout(() => {
-    setFilteredRoads([...results]);
-  }, 10);
-};
 
   // Funkcja do pobierania plików
   const handleDownload = (file, filename) => {
@@ -119,8 +86,187 @@ const applyFilters = () => {
     document.body.removeChild(link);
   };
 
+  // Funkcja do parsowania KML
+  const parseKmlTrack = async (kmlFile) => {
+    try {
+      // Pobierz plik KML
+      const response = await fetch(kmlFile);
+      const kmlText = await response.text();
+      
+      
+      
+      // Parsuj KML
+      const parser = new DOMParser();
+      const kml = parser.parseFromString(kmlText, 'text/xml');
+      const geojson = toGeoJSON.kml(kml);
+      
+      // Wyciągnij współrzędne trasy (zamień [długość, szerokość] na [szerokość, długość] dla Leaflet)
+      // Szukamy placemarków z liniami
+      let coordinates = [];
+      let extractedWaypoints = [];
+      
+      geojson.features.forEach(feature => {
+        if (feature.geometry && (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString')) {
+          if (feature.geometry.type === 'LineString') {
+            coordinates = feature.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+          } else if (feature.geometry.type === 'MultiLineString') {
+            coordinates = feature.geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
+          }
+        }
+
+                // DODANO: Dla punktów (Placemarks)
+                if (feature.geometry && feature.geometry.type === 'Point') {
+                  const coord = feature.geometry.coordinates;
+                  extractedWaypoints.push({
+                    position: [coord[1], coord[0]],
+                    name: feature.properties.name || 'Punkt',
+                    description: feature.properties.description || '',
+                    type: determinePointType(feature.properties.name || '')
+                  });
+                }
+      });
+      
+            // DODANO: Jeśli nie znaleziono punktów, utwórz je z linii
+            if (extractedWaypoints.length === 0 && coordinates.length > 0) {
+              // Dodaj punkt startu
+              extractedWaypoints.push({
+                position: coordinates[0],
+                name: 'Start',
+                description: 'Punkt początkowy trasy',
+                type: 'start'
+              });
+              
+              // Dodaj stacje drogi
+              for (let i = 1; i < coordinates.length - 1; i++) {
+                // Dodaj tylko co n-ty punkt jako stację - można dostosować
+                if (i % Math.ceil(coordinates.length / 15) === 0) {
+                  extractedWaypoints.push({
+                    position: coordinates[i],
+                    name: `Stacja ${Math.ceil(i / (coordinates.length / 14))}`,
+                    description: `Stacja drogi krzyżowej`,
+                    type: 'station'
+                  });
+                }
+              }
+              
+              // Dodaj punkt końcowy
+              extractedWaypoints.push({
+                position: coordinates[coordinates.length - 1],
+                name: 'Koniec',
+                description: 'Punkt końcowy trasy',
+                type: 'end'
+              });
+            }
+            
+      setTrackData(coordinates);
+      setWaypoints(extractedWaypoints);
+    } catch (error) {
+      console.error('Błąd parsowania KML:', error);
+      // ZMODYFIKOWANO: W przypadku błędu, dodaj też przykładowe punkty
+      const fallbackTrack = [
+        [49.8546, 19.3438], // Andrychów
+        [49.8776, 19.3092], // przykładowe punkty
+        [49.8658, 19.6753]
+      ];
+      
+      setTrackData(fallbackTrack);
+      // DODANO: Ustaw przykładowe punkty
+      setWaypoints([
+        { position: fallbackTrack[0], name: 'Start', description: 'Punkt początkowy', type: 'start' },
+        { position: fallbackTrack[1], name: 'Stacja 7', description: 'Stacja drogi krzyżowej', type: 'station' },
+        { position: fallbackTrack[2], name: 'Koniec', description: 'Punkt końcowy', type: 'end' }
+      ]);
+    }
+  };
+
+    // DODANO: Funkcja do określania typu punktu na podstawie nazwy
+    const determinePointType = (name) => {
+      const lowerName = name.toLowerCase();
+      if (lowerName.includes('start') || lowerName.includes('początek')) {
+        return 'start';
+      } else if (lowerName.includes('koniec') || lowerName.includes('meta')) {
+        return 'end';
+      } else {
+        return 'station';
+      }
+    };
+  
+
+  // Funkcja do podglądu trasy na mapie
+  const handlePreview = (road) => {
+    setSelectedRoad(road);
+    parseKmlTrack(road.track);
+    setShowMap(true);
+  };
+
+  // Funkcja do powrotu z widoku mapy do listy
+  const handleBackToList = () => {
+    setShowMap(false);
+    setSelectedRoad(null);
+    setTrackData(null);
+    setWaypoints([]);
+  };
+
+  // Komponent KmlTrack do wyświetlania śladu KML na mapie
+  const KmlTrack = ({ trackData, waypoints }) => {
+    const map = useMap();
+    
+    useEffect(() => {
+      if (trackData && trackData.length > 0) {
+        // Centrowanie mapy na trasie
+        const bounds = trackData.reduce(
+          (bounds, point) => bounds.extend(point),
+          L.latLngBounds(trackData[0], trackData[0])
+        );
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+    }, [map, trackData]);
+
+    const getMarkerIcon = (type) => {
+      switch (type) {
+        case 'start':
+          return StartIcon;
+        case 'end':
+          return EndIcon;
+        case 'station':
+          return StationIcon;
+        default:
+          return DefaultIcon;
+      }
+    };
+
+    return (
+      <>
+        {trackData && trackData.length > 0 && (
+          <Polyline 
+            positions={trackData} 
+            color="#8b5cf6" 
+            weight={5} 
+            opacity={0.8}
+          />
+        )}
+        
+        {/* DODANO: Wyświetlanie punktów/markerów */}
+        {waypoints && waypoints.map((waypoint, index) => (
+          <Marker 
+            key={index}
+            position={waypoint.position}
+            icon={getMarkerIcon(waypoint.type)}
+          >
+            <Popup>
+              <div>
+                <h3 className="font-bold">{waypoint.name}</h3>
+                <p>{waypoint.description}</p>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+      </>
+    );
+  };
+
   return (
-    <div className="relative flex flex-col items-center min-h-screen px-4 py-16 overflow-hidden bg-gradient-to-b from-gray-900 via-gray-900 to-indigo-950">
+    <div className="relative flex flex-col items-center min-h-screen px-4 py-16 overflow-hidden pb-36 bg-gradient-to-b from-gray-900 via-gray-900 to-indigo-950">
       {/* Subtelne tło z efektem */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
       <div className="absolute top-0 left-0 right-0 h-40 transform -translate-y-1/2 bg-purple-600/5 blur-3xl"></div>
@@ -132,271 +278,156 @@ const applyFilters = () => {
           <span className="block mb-1">TRASY DRÓG KRZYŻOWYCH</span>
         </h1>
         
-        {/* Podtytuł */}
-        <p className="max-w-lg mb-8 text-center text-gray-300 transition-all duration-700 delay-100 opacity-0 fade-in">
-          Poniżej znajdziesz listę parafialnych terenowych dróg krzyżowych. 
-          Kliknij na ikonę pobierania, aby zobaczyć opcje pobrania opisu i śladu trasy.
-        </p>
-        
-        {/* Panel filtrów */}
-        <div className="w-full mb-6 transition-all duration-700 delay-150 opacity-0 fade-in">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center">
-              <button 
-                onClick={toggleFilters}
-                className="flex items-center justify-center p-3 mr-2 text-white transition-all duration-300 border rounded-lg shadow-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50"
-              >
-                <Filter className="w-5 h-5 mr-2" />
-                <span>Filtry</span>
-              </button>
-              <span className="text-sm text-gray-400">
-                {filteredRoads.length} z {roads.length} tras
-              </span>
-            </div>
-          </div>
-          
-          {/* Panel filtrów wysuwany */}
-          <div 
-            className={`w-full mb-6 p-4 rounded-xl transition-all duration-300 bg-gray-800/70 backdrop-blur-md border border-purple-500/20 shadow-lg ${
-              isFilterOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden p-0 border-0'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-white">Opcje filtrowania</h3>
-              <button 
-                onClick={toggleFilters}
-                className="p-1 text-gray-400 transition-colors duration-200 rounded-full hover:text-white hover:bg-gray-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+        {!showMap ? (
+          <>
+            {/* Podtytuł */}
+            <p className="max-w-lg mb-8 text-center text-gray-300 transition-all duration-700 delay-100 opacity-0 fade-in">
+              Poniżej znajdziesz listę parafialnych terenowych dróg krzyżowych. 
+              Kliknij na ikonę pobierania, aby zobaczyć opcje pobrania opisu i śladu trasy.
+            </p>
             
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {/* Wyszukiwanie po nazwie */}
-              <div className="space-y-2">
-                <label className="flex items-center text-sm font-medium text-gray-300">
-                  <Search className="w-4 h-4 mr-2" />
-                  Nazwa trasy
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Wpisz nazwę trasy..."
-                    value={filters.name}
-                    onChange={(e) => handleFilterChange('name', e.target.value)}
-                    className="w-full p-2 pl-3 text-white transition-colors duration-200 border rounded-lg bg-gray-700/50 border-purple-500/20 focus:border-purple-500/50 focus:outline-none"
-                  />
-                  {filters.name && (
-                    <button 
-                      onClick={() => handleFilterChange('name', '')}
-                      className="absolute p-1 text-gray-400 transition-colors duration-200 rounded-full right-2 top-2 hover:text-white hover:bg-gray-700"
+            {/* Lista dróg */}
+            <div className="w-full mb-20 transition-all duration-700 delay-200 opacity-0 fade-in">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {roads.map((road, index) => (
+                  <div 
+                    key={road.id}
+                    className={`relative transition-all duration-300 border shadow-lg bg-gray-800/50 backdrop-blur-md rounded-xl border-purple-500/10 hover:border-purple-500/30 hover:shadow-purple-500/10 opacity-0 fade-in overflow-hidden`}
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    {/* Główny kafelek z nazwą i numerem */}
+                    <div className="flex items-center justify-between p-4">
+                      <div className="flex items-center">
+                        <div className="flex items-center justify-center w-10 h-10 mr-4 text-lg font-bold text-white border rounded-full bg-purple-600/20 backdrop-blur-sm border-purple-500/20">
+                          {road.id}
+                        </div>
+                        <h2 className="text-lg font-medium text-white">{road.name}</h2>
+                      </div>
+                      
+                      <button 
+                        onClick={() => toggleRoadExpand(road.id)}
+                        className="flex items-center justify-center w-10 h-10 text-2xl text-white transition-transform duration-300 rounded-full hover:bg-purple-600/20"
+                        style={{ transform: expandedRoadId === road.id ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                      >
+                        <MdDownloadForOffline />
+                      </button>
+                    </div>
+                    
+                    {/* Informacje o trasie */}
+                    <div className="px-6 mb-3 text-sm text-gray-200">
+                      <p className="mb-1"><span className="font-medium">Przebieg trasy:</span> {road.shortdescription}</p>
+                      <p><span className="font-medium">Dystans:</span> {road.KM}<> km</></p>
+                    </div>
+                    
+                    {/* Rozwijane opcje pobierania */}
+                    <div 
+                      className="transition-all duration-300 border-t bg-gray-700/30 border-purple-500/10"
+                      style={{ 
+                        maxHeight: expandedRoadId === road.id ? '200px' : '0',
+                        opacity: expandedRoadId === road.id ? 1 : 0,
+                        overflow: 'hidden',
+                        padding: expandedRoadId === road.id ? '12px' : '0 12px'
+                      }}
                     >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
-              
-              {/* Filtrowanie po miejscu docelowym */}
-              <div className="space-y-2">
-                <label className="flex items-center text-sm font-medium text-gray-300">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  Miejsce docelowe
-                </label>
-                <select
-                  value={filters.destination}
-                  onChange={(e) => handleFilterChange('destination', e.target.value)}
-                  className="w-full p-2 text-white transition-colors duration-200 border rounded-lg bg-gray-700/50 border-purple-500/20 focus:border-purple-500/50 focus:outline-none"
-                >
-                  <option value="">Wszystkie miejsca</option>
-                  {uniqueDestinations.map((dest) => (
-                    <option key={dest} value={dest}>{dest}</option>
-                  ))}
-                </select>
-              </div>
-              
-              {/* Powrót do punktu startowego */}
-              <div className="space-y-2">
-                <label className="flex items-center text-sm font-medium text-gray-300">
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Powrót do punktu startowego
-                </label>
-                <div className="flex items-center space-x-4">
-                  <button
-                    onClick={() => handleFilterChange('returnToStart', true)}
-                    className={`flex-1 flex items-center justify-center p-2 text-sm rounded-lg transition-colors duration-200 border ${
-                      filters.returnToStart === true 
-                        ? 'bg-purple-600/40 border-purple-500/50 text-white' 
-                        : 'bg-gray-700/30 border-gray-600/30 text-gray-300'
-                    }`}
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Tak
-                  </button>
-                  <button
-                    onClick={() => handleFilterChange('returnToStart', false)}
-                    className={`flex-1 flex items-center justify-center p-2 text-sm rounded-lg transition-colors duration-200 border ${
-                      filters.returnToStart === false 
-                        ? 'bg-purple-600/40 border-purple-500/50 text-white' 
-                        : 'bg-gray-700/30 border-gray-600/30 text-gray-300'
-                    }`}
-                  >
-                    <ArrowRight className="w-4 h-4 mr-2" />
-                    Nie
-                  </button>
-                  <button
-                    onClick={() => handleFilterChange('returnToStart', null)}
-                    className={`w-10 h-10 flex items-center justify-center rounded-lg transition-colors duration-200 border ${
-                      filters.returnToStart === null 
-                        ? 'bg-purple-600/40 border-purple-500/50 text-white' 
-                        : 'bg-gray-700/30 border-gray-600/30 text-gray-300'
-                    }`}
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-              
-              {/* Filtrowanie po dystansie */}
-              <div className="space-y-2">
-                <label className="flex items-center justify-between text-sm font-medium text-gray-300">
-                  <div className="flex items-center">
-                    <Sliders className="w-4 h-4 mr-2" />
-                    Dystans trasy
+                      {/* Przyciski pobierania */}
+                      <div className="grid grid-cols-3 gap-2">
+                        <button 
+                          onClick={() => handleDownload(road.description, `road${road.id}.pdf`)}
+                          className="flex items-center justify-center w-full p-3 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50 hover:-translate-y-1"
+                        >
+                          <Download className="w-4 h-4 mr-2" /> Opis
+                        </button>
+                        <button 
+                          onClick={() => handleDownload(road.track, `road${road.id}.kml`)}
+                          className="flex items-center justify-center w-full p-3 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50 hover:-translate-y-1"
+                        >
+                          <Download className="w-4 h-4 mr-2" />Ślad
+                        </button>
+                        {/* Podgląd */}
+                        <button 
+                          onClick={() => handlePreview(road)}
+                          className="flex items-center justify-center w-full p-3 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-blue-600/30 border-blue-500/30 hover:bg-blue-600/50 hover:-translate-y-1"
+                        >
+                          <Eye className="w-5 h-5 mr-0" /> Podgląd
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-gray-400">
-                    {filters.minDistance} - {filters.maxDistance} km
-                  </span>
-                </label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block mb-1 text-xs text-gray-400">Minimum</label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={filters.minDistance}
-                      onChange={(e) => handleFilterChange('minDistance', parseInt(e.target.value))}
-                      className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="block mb-1 text-xs text-gray-400">Maximum</label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={filters.maxDistance}
-                      onChange={(e) => handleFilterChange('maxDistance', parseInt(e.target.value))}
-                      className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-purple-600"
-                    />
-                  </div>
-                </div>
+                ))}
               </div>
+            </div>
+          </>
+        ) : (
+          // Widok mapy po kliknięciu Podgląd
+          <div className="w-full transition-all duration-700 opacity-0 fade-in">
+            
+            {/* Przycisk powrotu */}
+            <div className="flex items-center justify-between mb-4">
+              <button 
+                onClick={handleBackToList}
+                className="flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" /> Powrót do listy
+              </button>
+              {selectedRoad && (
+                <div className="px-4 py-2 text-white rounded-lg bg-gray-800/70 backdrop-blur-sm">
+                  <span className="font-medium">{selectedRoad.name}</span>
+                </div>
+              )}
             </div>
             
-            <div className="flex justify-end mt-6 space-x-3">
-              <button
-                onClick={resetFilters}
-                className="px-4 py-2 text-sm font-medium text-gray-300 transition-colors duration-200 border rounded-lg border-gray-600/50 hover:bg-gray-700/50"
+            {/* Mapa z trasą */}
+            <div className="w-full h-[70vh] rounded-xl overflow-hidden border border-purple-500/20 shadow-lg">
+              <MapContainer 
+                center={[49.8546, 19.3438]} // Domyślny widok na Andrychów
+                zoom={12} 
+                style={{ width: '100%', height: '100%' }}
+                zoomControl={false}
               >
-                Resetuj filtry
-              </button>
-              <button
-                onClick={applyFilters}
-                className="px-4 py-2 text-sm font-medium text-white transition-colors duration-200 border rounded-lg bg-purple-600/40 border-purple-500/50 hover:bg-purple-600/60"
-              >
-                Zastosuj
-              </button>
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {trackData && <KmlTrack trackData={trackData} />}
+                {trackData && <KmlTrack trackData={trackData} waypoints={waypoints} />}
+              </MapContainer>
             </div>
-          </div>
-        </div>
-        
-{/* Lista dróg */}
-<div className="w-full mb-20 transition-all duration-700 delay-200 opacity-0 fade-in">
-  {filteredRoads.length === 0 ? (
-    <div className="flex flex-col items-center justify-center p-8 text-center border rounded-xl bg-gray-800/40 border-purple-500/10">
-      <Search className="w-12 h-12 mb-4 text-gray-400" />
-      <h3 className="mb-2 text-xl font-medium text-white">Brak wyników</h3>
-      <p className="text-gray-400">Nie znaleziono tras spełniających kryteria filtrowania.</p>
-      <button
-        onClick={resetFilters}
-        className="flex items-center px-4 py-2 mt-4 text-sm font-medium text-white transition-colors duration-200 border rounded-lg bg-purple-600/40 border-purple-500/50 hover:bg-purple-600/60"
-      >
-        <RotateCw className="w-4 h-4 mr-2" /> 
-        Resetuj filtry
-      </button>
-    </div>
-  ) : (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {filteredRoads.map((road, index) => (
-        <div 
-          key={road.id}
-          className={`relative transition-all duration-300 border shadow-lg bg-gray-800/50 backdrop-blur-md rounded-xl border-purple-500/10 hover:border-purple-500/30 hover:shadow-purple-500/10 opacity-0 fade-in overflow-hidden`}
-          style={{ animationDelay: `${index * 50}ms` }}
-        >
-          {/* Główny kafelek z nazwą i numerem */}
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center">
-              <div className="flex items-center justify-center w-10 h-10 mr-4 text-lg font-bold text-white border rounded-full bg-purple-600/20 backdrop-blur-sm border-purple-500/20">
-                {road.id}
-              </div>
-              <h2 className="text-lg font-medium text-white">{road.name}</h2>
-            </div>
-            <button 
-              onClick={() => toggleRoadExpand(road.id)}
-              className="flex items-center justify-center w-10 h-10 text-2xl text-white transition-transform duration-300 rounded-full hover:bg-purple-600/20"
-              style={{ transform: expandedRoadId === road.id ? 'rotate(180deg)' : 'rotate(0deg)' }}
-            >
-              <MdDownloadForOffline />
-            </button>
-          </div>
-          
-          {/* Rozwijane opcje pobierania */}
-          <div 
-            className="transition-all duration-300 border-t bg-gray-700/30 border-purple-500/10"
-            style={{ 
-              maxHeight: expandedRoadId === road.id ? '200px' : '0',
-              opacity: expandedRoadId === road.id ? 1 : 0,
-              overflow: 'hidden',
-              padding: expandedRoadId === road.id ? '12px' : '0 12px'
-            }}
-          >
+            
             {/* Informacje o trasie */}
-            <div className="mb-3 text-sm text-gray-200">
-              <p className="mb-1"><span className="font-medium">Przebieg trasy:</span> {road.shortdescription}</p>
-              <p><span className="font-medium">Dystans:</span> {road.KM}<> km</></p>
-            </div>
-            
-            {/* Przyciski pobierania */}
-            <div className="grid grid-cols-3 gap-2">
-              <button 
-                onClick={() => handleDownload(road.description, `road${road.id}.pdf`)}
-                className="flex items-center justify-center w-full p-3 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50 hover:-translate-y-1"
-              >
-                <Download className="w-4 h-4 mr-2" /> Opis
-              </button>
-              <button 
-                onClick={() => handleDownload(road.track, `road${road.id}.kml`)}
-                className="flex items-center justify-center w-full p-3 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50 hover:-translate-y-1"
-              >
-                <Download className="w-4 h-4 mr-2" />Ślad
-              </button>
-              {/* Podgląd */}
-              <button 
-                //onClick={() => handlePreview(road)}
-                className="flex items-center justify-center w-full p-3 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-blue-600/30 border-blue-500/30 hover:bg-blue-600/50 hover:-translate-y-1"
-              >
-                <Eye className="w-5 h-5 mr-0" />  Podgląd
-              </button>
-            </div>
+            {selectedRoad && (
+              <div className="p-4 mt-4 border bg-gray-800/50 backdrop-blur-md rounded-xl border-purple-500/10">
+                <h2 className="mb-2 text-xl font-medium text-white">Informacje o trasie</h2>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div>
+                    <p className="text-gray-300"><span className="font-medium text-white">Nazwa:</span> {selectedRoad.name}</p>
+                    <p className="text-gray-300"><span className="font-medium text-white">Przebieg:</span> {selectedRoad.shortdescription}</p>
+                    <p className="text-gray-300"><span className="font-medium text-white">Dystans:</span> {selectedRoad.KM} km</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-300"><span className="font-medium text-white">Cel:</span> {selectedRoad.destination}</p>
+                    <p className="text-gray-300"><span className="font-medium text-white">Pętla:</span> {selectedRoad.loop ? 'Tak' : 'Nie'}</p>
+                  </div>
+                </div>
+                <div className="flex mt-4 space-x-3">
+                  <button 
+                    onClick={() => handleDownload(selectedRoad.description, `road${selectedRoad.id}.pdf`)}
+                    className="flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50"
+                  >
+                    <Download className="w-4 h-4 mr-2" /> Pobierz opis
+                  </button>
+                  <button 
+                    onClick={() => handleDownload(selectedRoad.track, `road${selectedRoad.id}.kml`)}
+                    className="flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50"
+                  >
+                    <Download className="w-4 h-4 mr-2" /> Pobierz ślad
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      ))}
-    </div>
-  )}
-</div>
-</div>
+        )}
+      </div>
+      
       
       {/* Dekoracyjny element na dole */}
       <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black to-transparent opacity-40"></div>

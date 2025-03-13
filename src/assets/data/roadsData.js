@@ -47,8 +47,8 @@ const roads = [
     { id: 12, name: "Św. Rafała", description: PDF12, track: KML12, shortdescription: "Andrychów / Zagórnik / Kaczyna / Wadowice", KM: 20, destination: "Wadowice", loop: false },
     { id: 13, name: "Św. Teresy", description: PDF13, track: KML13, shortdescription: "Andrychów / Wieprz / Tomice / Wadowice", KM: 23, destination: "Wadowice", loop: false },
     { id: 14, name: "Św. Alberta", description: 'PDF14', track: 'KML14', shortdescription: "W trakcie weryfikacji", KM: 0, destination: "Wadowice", loop: false },
-    { id: 15, name: "Św. Urbana", description: PDF15, track: 'KML15', shortdescription: "Roczyny / Żar / Kocierz / Roczyny", KM: 39, destination: "Roczyny", loop: true },
-    { id: 16, name: "Św. Pawła", description: PDF16, track: 'KML16', shortdescription: "Roczyny / Malec / Kęty / Roczyny", KM: 45, destination: "Roczyny", loop: true }
+    { id: 15, name: "Św. Urbana", description: PDF15, track: KML15, shortdescription: "Roczyny / Żar / Kocierz / Roczyny", KM: 39, destination: "Roczyny", loop: true },
+    { id: 16, name: "Św. Pawła", description: PDF16, track: KML16, shortdescription: "Roczyny / Malec / Kęty / Roczyny", KM: 45, destination: "Roczyny", loop: true }
 ];
 
 
