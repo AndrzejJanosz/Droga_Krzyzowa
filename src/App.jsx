@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom'
 import './App.css'
 import Navbar from './components/Navbar'
 import HomeButton from './components/HomeButton'
+import { Analytics } from "@vercel/analytics/react";
 
 function App() {
   
@@ -15,6 +16,7 @@ function App() {
       <Outlet />
     </main>
     <Navbar />
+    <Analytics />
      
     </>
   )
