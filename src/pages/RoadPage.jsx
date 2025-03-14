@@ -82,7 +82,7 @@ const RoadPage = () => {
 const handleDownload = (file, road, fileType) => {
   // Utwórz nazwę pliku zawierającą nazwę drogi i id
   const fileExtension = fileType.toLowerCase(); // pdf lub kml
-  const newFilename = `${road.name}_${road.id}.${fileExtension}`;
+  const newFilename = `${road.name}_.${fileExtension}`;
   
   const link = document.createElement('a');
   link.href = file;
