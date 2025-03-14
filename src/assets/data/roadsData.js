@@ -33,22 +33,22 @@ import PDF16 from '../Roads/16.pdf';
 import KML16 from '../Roads/16.kml';
 
 const roads = [
-    { id: 1, name: "Św. Macieja", description: PDF1, track: KML1, shortdescription: "Andrychów / Wieprz / Radocza / Wysoka / Kalwaria", KM: 42, destination: "Kalwaria", loop: false },
-    { id: 2, name: "Zielona", description: PDF2, track: KML2, shortdescription: "Andrychów / Zagórnik / Łękawica / Kalwaria", KM: 32, destination: "Kalwaria", loop: false },
-    { id: 3, name: "Św. Franciszka", description: PDF3, track: KML3, shortdescription: "Andrychów / Targoszów / Ślemień / Rychwałd", KM: 38, destination: "Rychwałd", loop: false },
-    { id: 4, name: "JP II", description: PDF4, track: KML4, shortdescription: "Andrychów / Zagórnik / Zembrzyce / Kalwaria", KM: 46, destination: "Kalwaria", loop: false },
-    { id: 5, name: "MB Różańcowej", description: PDF5, track: KML5, shortdescription: "Andrychów / Wieprz / Wadowice / Andrychów", KM: 43, destination: "Andrychów", loop: true },
-    { id: 6, name: "Św. Faustyny", description: PDF6, track: KML6, shortdescription: "Andrychów / Kaczyna / Wadowice / Andrychów", KM: 43, destination: "Andrychów", loop: true },
-    { id: 7, name: "Św. Józefa", description: PDF7, track: KML7, shortdescription: "Andrychów / Roczyny / Zawadka / Wadowice", KM: 31, destination: "Wadowice", loop: false },
-    { id: 8, name: "Św. Stanisława", description: PDF8, track: KML8, shortdescription: "Andrychów / Żar / Zagórnik / Andrychów ", KM: 50, destination: "Andrychów", loop: true },
-    { id: 9, name: "Św. Klary", description: PDF9, track: KML9, shortdescription: "Andrychów / Ślemień / Pewel Mała / Rychwałd", KM: 46, destination: "Rychwałd", loop: false },
-    { id: 10, name: "Wszystkich Świętych", description: PDF10, track: KML10, shortdescription: "Andrychów / Bulowice / Frydrychowice / Andrychów", KM: 52, destination: "Andrychów", loop: true },
-    { id: 11, name: "Św. Krzysztof", description: PDF11, track: KML11, shortdescription: "Andrychów / Zator / Piekary / Kraków", KM: 82, destination: "Kraków", loop: false },
-    { id: 12, name: "Św. Rafała", description: PDF12, track: KML12, shortdescription: "Andrychów / Zagórnik / Kaczyna / Wadowice", KM: 20, destination: "Wadowice", loop: false },
-    { id: 13, name: "Św. Teresy", description: PDF13, track: KML13, shortdescription: "Andrychów / Wieprz / Tomice / Wadowice", KM: 23, destination: "Wadowice", loop: false },
-    { id: 14, name: "Św. Alberta", description: 'PDF14', track: 'KML14', shortdescription: "W trakcie weryfikacji", KM: 0, destination: "Wadowice", loop: false },
-    { id: 15, name: "Św. Urbana", description: PDF15, track: KML15, shortdescription: "Roczyny / Żar / Kocierz / Roczyny", KM: 39, destination: "Roczyny", loop: true },
-    { id: 16, name: "Św. Pawła", description: PDF16, track: KML16, shortdescription: "Roczyny / Malec / Kęty / Roczyny", KM: 45, destination: "Roczyny", loop: true }
+    { id: 1, name: "Św. Macieja", description: PDF1, track: KML1, shortdescription: "Andrychów / Wieprz / Radocza / Wysoka / Kalwaria", KM: 42, destination: "Kalwaria", loop: false, parish: "Andrychów" },
+    { id: 2, name: "Zielona", description: PDF2, track: KML2, shortdescription: "Andrychów / Zagórnik / Łękawica / Kalwaria", KM: 32, destination: "Kalwaria", loop: false, parish: "Andrychów" },
+    { id: 3, name: "Św. Franciszka", description: PDF3, track: KML3, shortdescription: "Andrychów / Targoszów / Ślemień / Rychwałd", KM: 38, destination: "Rychwałd", loop: false, parish: "Andrychów" },
+    { id: 4, name: "JP II", description: PDF4, track: KML4, shortdescription: "Andrychów / Zagórnik / Zembrzyce / Kalwaria", KM: 46, destination: "Kalwaria", loop: false, parish: "Andrychów" },
+    { id: 5, name: "MB Różańcowej", description: PDF5, track: KML5, shortdescription: "Andrychów / Wieprz / Wadowice / Andrychów", KM: 43, destination: "Andrychów", loop: true, parish: "Andrychów" },
+    { id: 6, name: "Św. Faustyny", description: PDF6, track: KML6, shortdescription: "Andrychów / Kaczyna / Wadowice / Andrychów", KM: 43, destination: "Andrychów", loop: true, parish: "Andrychów" },
+    { id: 7, name: "Św. Józefa", description: PDF7, track: KML7, shortdescription: "Andrychów / Roczyny / Zawadka / Wadowice", KM: 31, destination: "Wadowice", loop: false, parish: "Andrychów" },
+    { id: 8, name: "Św. Stanisława", description: PDF8, track: KML8, shortdescription: "Andrychów / Żar / Zagórnik / Andrychów ", KM: 50, destination: "Andrychów", loop: true, parish: "Andrychów" },
+    { id: 9, name: "Św. Klary", description: PDF9, track: KML9, shortdescription: "Andrychów / Ślemień / Pewel Mała / Rychwałd", KM: 46, destination: "Rychwałd", loop: false, parish: "Andrychów" },
+    { id: 10, name: "Wszystkich Świętych", description: PDF10, track: KML10, shortdescription: "Andrychów / Bulowice / Frydrychowice / Andrychów", KM: 52, destination: "Andrychów", loop: true, parish: "Andrychów" },
+    { id: 11, name: "Św. Krzysztof", description: PDF11, track: KML11, shortdescription: "Andrychów / Zator / Piekary / Kraków", KM: 82, destination: "Kraków", loop: false, parish: "Andrychów" },
+    { id: 12, name: "Św. Rafała", description: PDF12, track: KML12, shortdescription: "Andrychów / Zagórnik / Kaczyna / Wadowice", KM: 20, destination: "Wadowice", loop: false, parish: "Andrychów" },
+    { id: 13, name: "Św. Teresy", description: PDF13, track: KML13, shortdescription: "Andrychów / Wieprz / Tomice / Wadowice", KM: 23, destination: "Wadowice", loop: false, parish: "Andrychów" },
+    { id: 14, name: "Św. Alberta", description: 'PDF14', track: 'KML14', shortdescription: "W trakcie weryfikacji", KM: 0, destination: "Wadowice", loop: false, parish: "W trakcie weryfikacji" },
+    { id: 15, name: "Św. Urbana", description: PDF15, track: KML15, shortdescription: "Roczyny / Żar / Kocierz / Roczyny", KM: 39, destination: "Roczyny", loop: true, parish: "Roczyny" },
+    { id: 16, name: "Św. Pawła", description: PDF16, track: KML16, shortdescription: "Roczyny / Malec / Kęty / Roczyny", KM: 45, destination: "Roczyny", loop: true, parish: "Roczyny" }
 ];
 
 

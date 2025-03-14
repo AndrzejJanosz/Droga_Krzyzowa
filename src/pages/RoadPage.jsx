@@ -78,14 +78,19 @@ const RoadPage = () => {
   };
 
   // Funkcja do pobierania plików
-  const handleDownload = (file, filename) => {
-    const link = document.createElement('a');
-    link.href = file;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+// Funkcja do pobierania plików
+const handleDownload = (file, road, fileType) => {
+  // Utwórz nazwę pliku zawierającą nazwę drogi i id
+  const fileExtension = fileType.toLowerCase(); // pdf lub kml
+  const newFilename = `${road.name}_${road.id}.${fileExtension}`;
+  
+  const link = document.createElement('a');
+  link.href = file;
+  link.download = newFilename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
   // Funkcja do parsowania KML
   const parseKmlTrack = async (kmlFile) => {
@@ -133,7 +138,7 @@ const RoadPage = () => {
               extractedWaypoints.push({
                 position: coordinates[0],
                 name: 'Start',
-                description: 'Punkt początkowy trasy',
+                description: 'Punkt początkowy drogi',
                 type: 'start'
               });
               
@@ -154,7 +159,7 @@ const RoadPage = () => {
               extractedWaypoints.push({
                 position: coordinates[coordinates.length - 1],
                 name: 'Koniec',
-                description: 'Punkt końcowy trasy',
+                description: 'Punkt końcowy drogi',
                 type: 'end'
               });
             }
@@ -309,7 +314,13 @@ const RoadPage = () => {
                         <div className="flex items-center justify-center w-10 h-10 mr-4 text-lg font-bold text-white border rounded-full bg-purple-600/20 backdrop-blur-sm border-purple-500/20">
                           {road.id}
                         </div>
-                        <h2 className="text-lg font-medium text-white">{road.name}</h2>
+                        <div className="flex flex-col">
+                          <h2 className="text-lg font-medium text-white">{road.name}</h2>
+                          <div className="mt-0.5 px-1 py-0.5 text-xs text-white/80 bg-purple-600/20 backdrop-blur-sm rounded-md border border-purple-500/20 max-w-fit">
+                            <span className="text-2xs">{road.parish}</span>
+                          </div>
+                        </div>
+                    
                       </div>
                       
                       <button 
@@ -323,8 +334,11 @@ const RoadPage = () => {
                     
                     {/* Informacje o trasie */}
                     <div className="px-6 mb-3 text-sm text-gray-200">
-                      <p className="mb-1"><span className="font-medium">Przebieg trasy:</span> {road.shortdescription}</p>
-                      <p><span className="font-medium">Dystans:</span> {road.KM}<> km</></p>
+                      <p className="mb-1"><span className="font-medium">Przebieg drogi:</span> {road.shortdescription}</p>
+                      <p>
+                        <span className="font-medium">Dystans: </span> 
+                        <span className="text-purple-500"> {road.KM}</span> <span className="text-purple-500">km</span>
+                      </p>
                     </div>
                     
                     {/* Rozwijane opcje pobierania */}
@@ -340,13 +354,13 @@ const RoadPage = () => {
                       {/* Przyciski pobierania */}
                       <div className="grid grid-cols-3 gap-2">
                         <button 
-                          onClick={() => handleDownload(road.description, `road${road.id}.pdf`)}
+                          onClick={() => handleDownload(road.description,road, `road${road.id}.pdf`)}
                           className="flex items-center justify-center w-full p-3 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50 hover:-translate-y-1"
                         >
                           <Download className="w-4 h-4 mr-2" /> Opis
                         </button>
                         <button 
-                          onClick={() => handleDownload(road.track, `road${road.id}.kml`)}
+                          onClick={() => handleDownload(road.track, road,`road${road.id}.kml`)}
                           className="flex items-center justify-center w-full p-3 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50 hover:-translate-y-1"
                         >
                           <Download className="w-4 h-4 mr-2" />Ślad
@@ -412,7 +426,7 @@ const RoadPage = () => {
             {/* Informacje o trasie */}
             {selectedRoad && (
               <div className="p-4 mt-4 border bg-gray-800/50 backdrop-blur-md rounded-xl border-purple-500/10">
-                <h2 className="mb-2 text-xl font-medium text-white">Informacje o trasie</h2>
+                <h2 className="mb-2 text-xl font-medium text-white">Informacje o drodze</h2>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
                     <p className="text-gray-300"><span className="font-medium text-white">Nazwa:</span> {selectedRoad.name}</p>
@@ -422,17 +436,21 @@ const RoadPage = () => {
                   <div>
                     <p className="text-gray-300"><span className="font-medium text-white">Cel:</span> {selectedRoad.destination}</p>
                     <p className="text-gray-300"><span className="font-medium text-white">Pętla:</span> {selectedRoad.loop ? 'Tak' : 'Nie'}</p>
+                    <span className="font-medium text-white">Parafia: </span>
+                    <div className="mt-0.5 px-1 py-0.5 text-xs text-white/80 bg-purple-600/20 backdrop-blur-sm rounded-md border border-purple-500/20 max-w-fit">
+                            <span className="text-2xs">{selectedRoad.parish}</span>
+                          </div>
                   </div>
                 </div>
                 <div className="flex mt-4 space-x-3">
                   <button 
-                    onClick={() => handleDownload(selectedRoad.description, `road${selectedRoad.id}.pdf`)}
+                    onClick={() => handleDownload(selectedRoad.description, selectedRoad , `road${selectedRoad.id}.pdf`)}
                     className="flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50"
                   >
                     <Download className="w-4 h-4 mr-2" /> Pobierz opis
                   </button>
                   <button 
-                    onClick={() => handleDownload(selectedRoad.track, `road${selectedRoad.id}.kml`)}
+                    onClick={() => handleDownload(selectedRoad.track,selectedRoad, `road${selectedRoad.id}.kml`)}
                     className="flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50"
                   >
                     <Download className="w-4 h-4 mr-2" /> Pobierz ślad
@@ -440,14 +458,16 @@ const RoadPage = () => {
                 </div>
               </div>
             )}
-          </div>
-        )}
-        <button 
+                    <button 
                 onClick={handleBackToList}
                 className="flex items-center px-4 py-2 mt-4 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" /> Powrót do listy
               </button>
+          </div>
+          
+        )}
+
         <div ref={bottomRef}></div>
       </div>
       
