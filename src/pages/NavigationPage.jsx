@@ -1,345 +1,493 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Map, View } from 'ol';
-import TileLayer from 'ol/layer/Tile';
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
-import OSM from 'ol/source/OSM';
-import { KML } from 'ol/format';
-import { fromLonLat } from 'ol/proj';
-import Feature from 'ol/Feature';
-import Point from 'ol/geom/Point';
-import { Style, Icon } from 'ol/style';
-import 'ol/ol.css';
-import { MdMyLocation, MdClose, MdArrowBack } from "react-icons/md";
+import roads from '../assets/data/roadsData';
+import { MapContainer, TileLayer, useMap, Polyline, Marker, Popup, Circle } from 'react-leaflet';
+import { ArrowLeft, MapPin, Navigation, List, Map as MapIcon } from "lucide-react";
+import 'leaflet/dist/leaflet.css';
+import * as L from 'leaflet';
+import toGeoJSON from '@mapbox/togeojson';
 
-// Import KML files
-import roadKML1 from '../assets/Roads/1.kml';
-import roadKML2 from '../assets/Roads/2.kml';
- import roadKML3 from '../assets/Roads/3.kml';
-// import roadKML4 from '../assets/Roads/road4.kml';
-// import roadKML5 from '../assets/Roads/road5.kml';
-// import roadKML6 from '../assets/Roads/road6.kml';
-// import roadKML7 from '../assets/Roads/road7.kml';
-// import roadKML8 from '../assets/Roads/road8.kml';
-// import roadKML9 from '../assets/Roads/road9.kml';
-// import roadKML10 from '../assets/Roads/road10.kml';
-// import roadKML11 from '../assets/Roads/road11.kml';
+// Import default icons
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// Default marker icon
+let DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34]
+});
+
+// Custom icons for different point types
+let StartIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34]
+});
+
+let EndIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34]
+});
+
+let StationIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34]
+});
+
+let LocationIcon = L.icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34]
+});
+
+// Set default icon
+L.Marker.prototype.options.icon = DefaultIcon;
 
 const NavigationPage = () => {
-  // Routes data
-  const roads = [
-    { id: 1, name: "Franciszek", track: roadKML1 },
-     { id: 2, name: "Stanisława", track: roadKML2 },
-    { id: 3, name: "Teresy", track: roadKML3 }//,
-    // { id: 4, name: "Droga leśna w Targanicach", track: roadKML4 },
-    // { id: 5, name: "Ścieżka przez Zagórnik", track: roadKML5 },
-    // { id: 6, name: "Trasa przez Rzyki", track: roadKML6 },
-    // { id: 7, name: "Szlak Roczyn-Brzezinka", track: roadKML7 },
-    // { id: 8, name: "Droga przez Sułkowice", track: roadKML8 },
-    // { id: 9, name: "Ścieżka w dolinie Wieprzówki", track: roadKML9 },
-    // { id: 10, name: "Trasa Kaczyna-Chocznię", track: roadKML10 },
-    // { id: 11, name: "Droga przez stary Andrychów", track: roadKML11 }
-  ];
-
-  // States
-  const [selectedRouteId, setSelectedRouteId] = useState(null);
-  const [isRouteListOpen, setIsRouteListOpen] = useState(true);
+  const [selectedRoad, setSelectedRoad] = useState(null);
+  const [trackData, setTrackData] = useState(null);
+  const [waypoints, setWaypoints] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
-  const [locationTrackingEnabled, setLocationTrackingEnabled] = useState(false);
-  const [map, setMap] = useState(null);
-  const [centerOnUser, setCenterOnUser] = useState(true);
+  const [showList, setShowList] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [watchId, setWatchId] = useState(null);
   
-  // References
+  // Refs
   const mapRef = useRef(null);
-  const userLocationLayerRef = useRef(null);
-  const routeLayerRef = useRef(null);
-  const watchIdRef = useRef(null);
-
-  // On component mount
+  
+  // Effect for fade-in animations
   useEffect(() => {
-    // Try to load previously selected route from localStorage
-    const savedRouteId = localStorage.getItem('selectedRouteId');
-    if (savedRouteId) {
-      setSelectedRouteId(parseInt(savedRouteId));
-      setIsRouteListOpen(false);
-    }
-
-    // Initialize map
-    const initialMap = new Map({
-      target: mapRef.current,
-      layers: [
-        new TileLayer({
-          source: new OSM()
-        })
-      ],
-      view: new View({
-        center: fromLonLat([19.3440, 49.8537]), // Andrychów area
-        zoom: 13
-      })
+    const elements = document.querySelectorAll('.fade-in');
+    elements.forEach((element, index) => {
+      setTimeout(() => {
+        element.classList.add('active');
+      }, 50 * index);
     });
+  }, [showList]);
+  
+  // Start watching user location when component mounts
+  useEffect(() => {
+    startWatchingLocation();
     
-    setMap(initialMap);
-
-    // Create user location layer
-    const userLocationSource = new VectorSource();
-    const userLocationLayer = new VectorLayer({
-      source: userLocationSource,
-      style: new Style({
-        image: new Icon({
-          src: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%234338ca" width="18px" height="18px"><circle cx="12" cy="12" r="10" stroke="white" stroke-width="2"/></svg>',
-          scale: 1.2
-        })
-      })
-    });
-    
-    initialMap.addLayer(userLocationLayer);
-    userLocationLayerRef.current = userLocationSource;
-
-    // Create route layer
-    const routeSource = new VectorSource();
-    const routeLayer = new VectorLayer({
-      source: routeSource
-    });
-    
-    initialMap.addLayer(routeLayer);
-    routeLayerRef.current = routeSource;
-
+    // Cleanup function to stop watching when component unmounts
     return () => {
-      // Clean up
-      if (initialMap) {
-        initialMap.setTarget(null);
-      }
-      if (watchIdRef.current) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
+      if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
       }
     };
   }, []);
-
-  // Effect for handling route selection
-  useEffect(() => {
-    if (!selectedRouteId || !map) return;
-
-    // Save selection to localStorage
-    localStorage.setItem('selectedRouteId', selectedRouteId.toString());
-
-    // Load KML track
-    const selectedRoute = roads.find(road => road.id === selectedRouteId);
-    if (selectedRoute && routeLayerRef.current) {
-      routeLayerRef.current.clear();
+  
+  // Function to start watching user location
+  const startWatchingLocation = () => {
+    if (navigator.geolocation) {
+      const id = navigator.geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude, accuracy } = position.coords;
+          setUserLocation({
+            position: [latitude, longitude],
+            accuracy: accuracy
+          });
+          setError(null);
+        },
+        (err) => {
+          setError(`Błąd lokalizacji: ${err.message}`);
+          console.error('Błąd lokalizacji:', err);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        }
+      );
       
-      fetch(selectedRoute.track)
-        .then(response => response.text())
-        .then(kmlText => {
-          const features = new KML().readFeatures(kmlText, {
-            featureProjection: 'EPSG:3857'
-          });
-          
-          routeLayerRef.current.addFeatures(features);
-          
-          // Zoom to route extent
-          const extent = routeLayerRef.current.getExtent();
-          map.getView().fit(extent, {
-            padding: [50, 50, 50, 50],
-            maxZoom: 16
-          });
-        })
-        .catch(error => console.error("Error loading KML:", error));
+      setWatchId(id);
+    } else {
+      setError('Twoja przeglądarka nie obsługuje geolokalizacji');
     }
-  }, [selectedRouteId, map, roads]);
-
-  // Handle location tracking
-  const startLocationTracking = () => {
-    if (!navigator.geolocation) {
-      alert("Twoja przeglądarka nie obsługuje geolokalizacji.");
-      return;
+  };
+  
+  // Function to center map on user location
+  const centerOnUserLocation = () => {
+    if (mapRef.current && userLocation) {
+      mapRef.current.flyTo(userLocation.position, 16);
+    } else if (!userLocation) {
+      setError('Lokalizacja użytkownika niedostępna');
     }
-
-    setLocationTrackingEnabled(true);
-    
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        const location = fromLonLat([longitude, latitude]);
+  };
+  
+  // Function to parse KML file
+  const parseKmlTrack = async (kmlFile) => {
+    setLoading(true);
+    try {
+      // Fetch KML file
+      const response = await fetch(kmlFile);
+      const kmlText = await response.text();
+      
+      // Parse KML
+      const parser = new DOMParser();
+      const kml = parser.parseFromString(kmlText, 'text/xml');
+      const geojson = toGeoJSON.kml(kml);
+      
+      // Extract coordinates and waypoints
+      let coordinates = [];
+      let extractedWaypoints = [];
+      
+      geojson.features.forEach(feature => {
+        if (feature.geometry && (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString')) {
+          if (feature.geometry.type === 'LineString') {
+            coordinates = feature.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+          } else if (feature.geometry.type === 'MultiLineString') {
+            coordinates = feature.geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
+          }
+        }
         
-        setUserLocation(location);
-        
-        // Update user location marker
-        if (userLocationLayerRef.current) {
-          userLocationLayerRef.current.clear();
-          const locationFeature = new Feature({
-            geometry: new Point(location)
+        // Extract point features (Placemarks)
+        if (feature.geometry && feature.geometry.type === 'Point') {
+          const coord = feature.geometry.coordinates;
+          extractedWaypoints.push({
+            position: [coord[1], coord[0]],
+            name: feature.properties.name || 'Punkt',
+            description: feature.properties.description || '',
+            type: determinePointType(feature.properties.name || '')
           });
-          userLocationLayerRef.current.addFeature(locationFeature);
-          
-          // Center map on user if enabled
-          if (centerOnUser && map) {
-            map.getView().animate({
-              center: location,
-              duration: 500
+        }
+      });
+      
+      // If no waypoints were found, create them from the line
+      if (extractedWaypoints.length === 0 && coordinates.length > 0) {
+        // Add start point
+        extractedWaypoints.push({
+          position: coordinates[0],
+          name: 'Start',
+          description: 'Punkt początkowy drogi',
+          type: 'start'
+        });
+        
+        // Add stations along the way
+        for (let i = 1; i < coordinates.length - 1; i++) {
+          if (i % Math.ceil(coordinates.length / 15) === 0) {
+            extractedWaypoints.push({
+              position: coordinates[i],
+              name: `Stacja ${Math.ceil(i / (coordinates.length / 14))}`,
+              description: 'Stacja drogi krzyżowej',
+              type: 'station'
             });
           }
         }
-      },
-      (error) => {
-        console.error("Error getting location:", error);
-        setLocationTrackingEnabled(false);
-        alert("Nie można uzyskać dostępu do lokalizacji. Sprawdź ustawienia i spróbuj ponownie.");
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
+        
+        // Add end point
+        extractedWaypoints.push({
+          position: coordinates[coordinates.length - 1],
+          name: 'Koniec',
+          description: 'Punkt końcowy drogi',
+          type: 'end'
+        });
       }
+      
+      setTrackData(coordinates);
+      setWaypoints(extractedWaypoints);
+      setLoading(false);
+    } catch (error) {
+      console.error('Błąd parsowania KML:', error);
+      setError('Nie udało się wczytać śladu KML');
+      
+      // Fallback track in case of error
+      const fallbackTrack = [
+        [49.8546, 19.3438], 
+        [49.8776, 19.3092], 
+        [49.8658, 19.6753]
+      ];
+      
+      setTrackData(fallbackTrack);
+      setWaypoints([
+        { position: fallbackTrack[0], name: 'Start', description: 'Punkt początkowy', type: 'start' },
+        { position: fallbackTrack[1], name: 'Stacja 7', description: 'Stacja drogi krzyżowej', type: 'station' },
+        { position: fallbackTrack[2], name: 'Koniec', description: 'Punkt końcowy', type: 'end' }
+      ]);
+      
+      setLoading(false);
+    }
+  };
+  
+  // Function to determine point type based on name
+  const determinePointType = (name) => {
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes('start') || lowerName.includes('początek')) {
+      return 'start';
+    } else if (lowerName.includes('koniec') || lowerName.includes('meta')) {
+      return 'end';
+    } else {
+      return 'station';
+    }
+  };
+  
+  // Handle selecting a road
+  const handleSelectRoad = (road) => {
+    setSelectedRoad(road);
+    parseKmlTrack(road.track);
+    setShowList(false);
+  };
+  
+  // Return to list view
+  const handleBackToList = () => {
+    setShowList(true);
+    setSelectedRoad(null);
+    setTrackData(null);
+    setWaypoints([]);
+  };
+  
+  // Component to display KML track and user location on map
+  const TrackLayer = ({ trackData, waypoints, userLocation }) => {
+    const map = useMap();
+    
+    // Store map instance in ref
+    useEffect(() => {
+      mapRef.current = map;
+    }, [map]);
+    
+    // Center map on track when it loads
+    useEffect(() => {
+      if (trackData && trackData.length > 0) {
+        const bounds = trackData.reduce(
+          (bounds, point) => bounds.extend(point),
+          L.latLngBounds(trackData[0], trackData[0])
+        );
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+    }, [map, trackData]);
+    
+    // Get appropriate icon based on waypoint type
+    const getMarkerIcon = (type) => {
+      switch (type) {
+        case 'start':
+          return StartIcon;
+        case 'end':
+          return EndIcon;
+        case 'station':
+          return StationIcon;
+        default:
+          return DefaultIcon;
+      }
+    };
+    
+    return (
+      <>
+        {/* Track polyline */}
+        {trackData && trackData.length > 0 && (
+          <Polyline 
+            positions={trackData} 
+            color="#8b5cf6" 
+            weight={5} 
+            opacity={0.8}
+          />
+        )}
+        
+        {/* Waypoints */}
+        {waypoints && waypoints.map((waypoint, index) => (
+          <Marker 
+            key={`waypoint-${index}`}
+            position={waypoint.position}
+            icon={getMarkerIcon(waypoint.type)}
+          >
+            <Popup>
+              <div>
+                <h3 className="font-bold">{waypoint.name}</h3>
+                <p>{waypoint.description}</p>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+        
+        {/* User location marker with accuracy circle */}
+        {userLocation && (
+          <>
+            <Marker 
+              position={userLocation.position}
+              icon={LocationIcon}
+            >
+              <Popup>
+                <div>
+                  <h3 className="font-bold">Twoja lokalizacja</h3>
+                  <p>Dokładność: {Math.round(userLocation.accuracy)} m</p>
+                </div>
+              </Popup>
+            </Marker>
+            <Circle 
+              center={userLocation.position}
+              radius={userLocation.accuracy}
+              pathOptions={{ color: '#10B981', fillColor: '#10B981', fillOpacity: 0.2 }}
+            />
+          </>
+        )}
+      </>
     );
   };
-
-  const stopLocationTracking = () => {
-    if (watchIdRef.current) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
-      watchIdRef.current = null;
-    }
-    setLocationTrackingEnabled(false);
-  };
-
-  const handleRouteSelect = (routeId) => {
-    setSelectedRouteId(routeId);
-    setIsRouteListOpen(false);
-    
-    // Start location tracking if not already active
-    if (!locationTrackingEnabled) {
-      startLocationTracking();
-    }
-  };
-
-  const toggleRouteList = () => {
-    setIsRouteListOpen(!isRouteListOpen);
-  };
-
-  const centerMapOnUser = () => {
-    if (userLocation && map) {
-      map.getView().animate({
-        center: userLocation,
-        duration: 500
-      });
-      setCenterOnUser(true);
-    }
-  };
-
-  // Disable auto-centering when user manually pans the map
-  useEffect(() => {
-    if (!map) return;
-    
-    const moveEndListener = () => {
-      setCenterOnUser(false);
-    };
-    
-    map.on('moveend', moveEndListener);
-    
-    return () => {
-      map.un('moveend', moveEndListener);
-    };
-  }, [map]);
-
+  
   return (
-    <div className="relative flex flex-col h-screen overflow-hidden bg-gray-900">
-      {/* Map container */}
-      <div 
-        ref={mapRef} 
-        className="absolute inset-0 z-0"
-        style={{ touchAction: 'manipulation' }}
-      />
-
-      {/* Route selection overlay */}
-      <div 
-        className={`absolute inset-x-0 z-10 transition-all duration-300 bg-gray-900/95 overflow-y-auto ${
-          isRouteListOpen ? 'top-0 bottom-0' : 'top-0 -translate-y-full h-0'
-        }`}
-      >
-        <div className="px-4 py-20">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-bold text-white">Wybierz trasę</h1>
-            <button 
-              onClick={toggleRouteList} 
-              className="flex items-center justify-center w-10 h-10 text-white transition-all rounded-full bg-purple-600/30 hover:bg-purple-600/50"
-            >
-              <MdClose size={24} />
-            </button>
-          </div>
-          
-          <div className="grid gap-3">
-            {roads.map((road) => (
-              <button
-                key={road.id}
-                onClick={() => handleRouteSelect(road.id)}
-                className={`p-4 text-left rounded-lg transition-all ${
-                  selectedRouteId === road.id 
-                    ? 'bg-purple-600/50 border-purple-500' 
-                    : 'bg-gray-800/70 hover:bg-gray-800'
-                } border border-purple-500/20`}
-              >
-                <div className="flex items-center">
-                  <div className="flex items-center justify-center w-8 h-8 mr-3 text-lg font-bold text-white rounded-full bg-purple-600/30 border-purple-500/30">
-                    {road.id}
-                  </div>
-                  <h3 className="text-lg font-medium text-white">{road.name}</h3>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Controls when map is showing */}
-      {!isRouteListOpen && (
-        <>
-          {/* Top bar */}
-          <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-3 bg-gray-900/70 backdrop-blur-md">
-            <button 
-              onClick={toggleRouteList}
-              className="flex items-center justify-center w-10 h-10 text-white transition-all rounded-full bg-purple-600/30 hover:bg-purple-600/50"
-            >
-              <MdArrowBack size={22} />
-            </button>
-            <h2 className="max-w-xs px-2 text-lg font-medium text-white truncate">
-              {selectedRouteId ? roads.find(r => r.id === selectedRouteId)?.name : "Wybierz trasę"}
-            </h2>
-            <div className="w-10" /> {/* Spacer for alignment */}
-          </div>
-          
-          {/* Location tracking button */}
-          <div className="absolute z-10 flex flex-col gap-3 bottom-36 right-6">
-            <button
-              onClick={centerMapOnUser}
-              disabled={!userLocation}
-              className={`flex items-center justify-center w-12 h-12 text-white rounded-full shadow-lg transition-all ${
-                centerOnUser && userLocation 
-                  ? 'bg-purple-600' 
-                  : 'bg-gray-700/80 backdrop-blur-md'
-              }`}
-            >
-              <MdMyLocation size={24} />
-            </button>
+    <div className="relative flex flex-col items-center min-h-screen px-4 py-16 overflow-hidden pb-36 bg-gradient-to-b from-gray-900 via-gray-900 to-indigo-950">
+      {/* Background effect */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+      <div className="absolute top-0 left-0 right-0 h-40 transform -translate-y-1/2 bg-purple-600/5 blur-3xl"></div>
+      
+      {/* Content with animation */}
+      <div className="relative z-10 flex flex-col items-center w-full max-w-4xl">
+        {/* Page header */}
+        <h1 className="mb-8 text-2xl font-bold tracking-wide text-center text-white transition-all duration-700 opacity-0 md:text-3xl lg:text-4xl fade-in">
+          <span className="block mb-1">NAWIGACJA DRÓG KRZYŻOWYCH</span>
+        </h1>
+        
+        {showList ? (
+          <>
+            {/* List view subtitle */}
+            <p className="max-w-lg mb-8 text-center text-gray-300 transition-all duration-700 delay-100 opacity-0 fade-in">
+              Wybierz trasę, aby rozpocząć nawigację. Mapa pokaże Twoją aktualną lokalizację względem wybranej trasy.
+            </p>
             
-            {!locationTrackingEnabled ? (
-              <button
-                onClick={startLocationTracking}
-                className="flex items-center justify-center px-4 py-3 text-white bg-purple-600 rounded-full shadow-lg hover:bg-purple-700"
+            {/* Road list */}
+            <div className="w-full mb-20 transition-all duration-700 delay-200 opacity-0 fade-in">
+              <div className="grid grid-cols-1 gap-4">
+                {roads.map((road, index) => (
+                  <div 
+                    key={road.id}
+                    className={`relative transition-all duration-300 border shadow-lg bg-gray-800/50 backdrop-blur-md rounded-xl border-purple-500/10 hover:border-purple-500/30 hover:shadow-purple-500/10 opacity-0 fade-in overflow-hidden cursor-pointer`}
+                    style={{ animationDelay: `${index * 50}ms` }}
+                    onClick={() => handleSelectRoad(road)}
+                  >
+                    <div className="flex items-center justify-between p-4">
+                      <div className="flex items-center">
+                        <div className="flex items-center justify-center w-10 h-10 mr-4 text-lg font-bold text-white border rounded-full bg-purple-600/20 backdrop-blur-sm border-purple-500/20">
+                          {road.id}
+                        </div>
+                        <div className="flex flex-col">
+                          <h2 className="text-lg font-medium text-white">{road.name}</h2>
+                          <div className="mt-0.5 px-1 py-0.5 text-xs text-white/80 bg-purple-600/20 backdrop-blur-sm rounded-md border border-purple-500/20 max-w-fit">
+                            <span className="text-2xs">{road.parish}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-center w-10 h-10 text-white transition-transform duration-300 rounded-full hover:bg-purple-600/20">
+                        <MapPin className="w-5 h-5" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          // Map view
+          <div className="w-full transition-all duration-700 opacity-0 fade-in">
+            {/* Map controls */}
+            <div className="flex items-center justify-between mb-4">
+              <button 
+                onClick={handleBackToList}
+                className="flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50"
               >
-                <span>Śledź lokalizację</span>
+                <ArrowLeft className="w-4 h-4 mr-2" /> Powrót do listy
               </button>
-            ) : (
-              <button
-                onClick={stopLocationTracking}
-                className="flex items-center justify-center px-4 py-3 text-white bg-red-600 rounded-full shadow-lg hover:bg-red-700"
+              {selectedRoad && (
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={centerOnUserLocation}
+                    className="flex items-center justify-center w-10 h-10 transition-all bg-purple-600 rounded-lg hover:bg-purple-700"
+                  >
+                    <Navigation className="w-6 h-6 text-white" />
+                  </button>
+                  <div className="px-4 py-2 text-white rounded-lg bg-gray-800/70 backdrop-blur-sm">
+                    <span className="font-medium">{selectedRoad.name}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+  
+            {/* Loading indicator */}
+            {loading && (
+              <div className="absolute z-20 flex items-center justify-center w-full h-full">
+                <div className="p-4 text-white rounded-lg bg-gray-800/80 backdrop-blur-sm">
+                  Wczytywanie trasy...
+                </div>
+              </div>
+            )}
+  
+            {/* Error message */}
+            {error && (
+              <div className="p-3 mb-4 text-white rounded-lg bg-red-500/80 backdrop-blur-sm">
+                {error}
+              </div>
+            )}
+  
+            {/* Map container */}
+            <div className="relative w-full h-[75vh] rounded-xl overflow-hidden border border-purple-500/20 shadow-lg">
+              <MapContainer 
+                center={[49.8546, 19.3438]} // Default view on Andrychów
+                zoom={12} 
+                style={{ width: '100%', height: '100%' }}
+                zoomControl={false}
               >
-                <span>Zatrzymaj śledzenie</span>
-              </button>
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <TrackLayer trackData={trackData} waypoints={waypoints} userLocation={userLocation} />
+              </MapContainer>
+              
+              {/* Floating action buttons */}
+              <div className="absolute flex flex-col space-y-2 bottom-4 right-4">
+                <button 
+                  onClick={centerOnUserLocation}
+                  className="flex items-center justify-center w-12 h-12 text-white transition-all bg-purple-600 rounded-full shadow-lg hover:bg-purple-700"
+                >
+                  <Navigation className="w-6 h-6" />
+                </button>
+                <button 
+                  onClick={handleBackToList}
+                  className="flex items-center justify-center w-12 h-12 text-white transition-all bg-blue-600 rounded-full shadow-lg hover:bg-blue-700"
+                >
+                  <List className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+  
+            {/* Route information panel */}
+            {selectedRoad && (
+              <div className="p-4 mt-4 border bg-gray-800/50 backdrop-blur-md rounded-xl border-purple-500/10">
+                <h2 className="mb-2 text-xl font-medium text-white">Informacje o drodze</h2>
+                <div>
+                  <p className="text-gray-300"><span className="font-medium text-white">Nazwa:</span> {selectedRoad.name}</p>
+                  <p className="text-gray-300"><span className="font-medium text-white">Przebieg:</span> {selectedRoad.shortdescription}</p>
+                  <p className="text-gray-300"><span className="font-medium text-white">Dystans:</span> {selectedRoad.KM} km</p>
+                  {userLocation && (
+                    <p className="text-gray-300">
+                      <span className="font-medium text-white">Twoja pozycja:</span> 
+                      {userLocation.position[0].toFixed(5)}, {userLocation.position[1].toFixed(5)}
+                      <span className="ml-2 text-sm text-green-400">(dokładność: {Math.round(userLocation.accuracy)} m)</span>
+                    </p>
+                  )}
+                </div>
+              </div>
             )}
           </div>
-        </>
-      )}
+        )}
+        
+        {/* Decorative elements */}
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black to-transparent opacity-40"></div>
+      </div>
     </div>
   );
+
 };
 
 export default NavigationPage;
