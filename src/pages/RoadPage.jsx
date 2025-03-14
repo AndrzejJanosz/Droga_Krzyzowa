@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import { MdDownloadForOffline } from "react-icons/md";
 import roads from '../assets/data/roadsData';
+import { ArrowDownCircle } from "lucide-react";
 import { Eye, Map, Download, ArrowLeft } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 
@@ -60,7 +61,7 @@ const RoadPage = () => {
   const [waypoints, setWaypoints] = useState([]);
   
   const navigate = useNavigate();
-  
+  const bottomRef = useRef(null);
   // Efekt do animacji pojawiania się elementów
   useEffect(() => {
     const elements = document.querySelectorAll('.fade-in');
@@ -191,6 +192,11 @@ const RoadPage = () => {
       }
     };
   
+    const scrollToBottom = () => {
+      if (bottomRef.current) {
+        bottomRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    };
 
   // Funkcja do podglądu trasy na mapie
   const handlePreview = (road) => {
@@ -275,16 +281,18 @@ const RoadPage = () => {
       <div className="relative z-10 flex flex-col items-center w-full max-w-4xl">
         {/* Tytuł z efektem pojawiania się */}
         <h1 className="mb-8 text-2xl font-bold tracking-wide text-center text-white transition-all duration-700 opacity-0 md:text-3xl lg:text-4xl fade-in">
-          <span className="block mb-1">TRASY DRÓG KRZYŻOWYCH</span>
+          <span className="block mb-1">TERENOWE DROGI KRZYŻOWE</span>
         </h1>
         
         {!showMap ? (
           <>
             {/* Podtytuł */}
             <p className="max-w-lg mb-8 text-center text-gray-300 transition-all duration-700 delay-100 opacity-0 fade-in">
-              Poniżej znajdziesz listę parafialnych terenowych dróg krzyżowych. 
-              Kliknij na ikonę pobierania, aby zobaczyć opcje pobrania opisu i śladu trasy.
-            </p>
+            Poniżej znajdziesz listę parafialnych terenowych dróg krzyżowych. 
+            <span className="font-semibold text-purple-500"> Kliknij na ikonę pobierania </span>, aby zobaczyć opcje pobrania opisu i śladu dróg.
+            
+              </p>
+             
             
             {/* Lista dróg */}
             <div className="w-full mb-20 transition-all duration-700 delay-200 opacity-0 fade-in">
@@ -370,10 +378,18 @@ const RoadPage = () => {
                 <ArrowLeft className="w-4 h-4 mr-2" /> Powrót do listy
               </button>
               {selectedRoad && (
-                <div className="px-4 py-2 text-white rounded-lg bg-gray-800/70 backdrop-blur-sm">
-                  <span className="font-medium">{selectedRoad.name}</span>
-                </div>
-              )}
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={scrollToBottom}
+              className="flex items-center justify-center w-10 h-10 transition-all bg-purple-600 rounded-lg hover:bg-purple-700"
+            >
+              <ArrowDownCircle className="w-6 h-6 text-white" />
+            </button>
+            <div className="px-4 py-2 text-white rounded-lg bg-gray-800/70 backdrop-blur-sm">
+              <span className="font-medium">{selectedRoad.name}</span>
+            </div>
+          </div>
+        )}
             </div>
             
             {/* Mapa z trasą */}
@@ -426,6 +442,13 @@ const RoadPage = () => {
             )}
           </div>
         )}
+        <button 
+                onClick={handleBackToList}
+                className="flex items-center px-4 py-2 mt-4 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" /> Powrót do listy
+              </button>
+        <div ref={bottomRef}></div>
       </div>
       
       

@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { IoAnalyticsOutline } from "react-icons/io5";
+import { IoAnalyticsOutline,IoInformationCircleOutline } from "react-icons/io5";
 import { LuMapPin } from "react-icons/lu";
 import { FaBookBible } from "react-icons/fa6";
+
 
 const Navbar = () => {
   const location = useLocation();
@@ -33,7 +34,7 @@ const Navbar = () => {
             </span>
           </Link>
           
-          <Link
+          {/* <Link
             to="/nawigacja"
             className="flex flex-col items-center justify-center py-1"
           >
@@ -47,7 +48,7 @@ const Navbar = () => {
               ${isActive('/nawigacja') ? 'text-white' : 'text-gray-500'}`}>
               Nawigacja
             </span>
-          </Link>
+          </Link> */}
           
           <Link
             to="/rozwazania"
@@ -62,6 +63,18 @@ const Navbar = () => {
             <span className={`text-xs mt-1 font-medium transition-all duration-300 
               ${isActive('/rozwazania') ? 'text-white' : 'text-gray-500'}`}>
               Rozważania
+            </span>
+          </Link>
+          
+          <Link
+            to="https://swmaciej.org.pl/parafialna-terenowa-droga-krzyzowa/"
+            className="flex flex-col items-center justify-center py-1"
+          >
+            <div className="p-2 text-gray-400 transition-all duration-300 rounded-full">
+              <IoInformationCircleOutline className="text-2xl" />
+            </div>
+            <span className="mt-1 text-xs font-medium text-gray-500 transition-all duration-300">
+              Info
             </span>
           </Link>
         </div>

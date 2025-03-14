@@ -53,7 +53,7 @@ const HomePage = () => {
   }, []);
 
   return (
-    <div className="relative flex flex-col items-center min-h-screen px-4 py-16 overflow-hidden bg-gradient-to-b from-gray-900 via-gray-900 to-indigo-950">
+    <div className="relative flex flex-col items-center min-h-screen px-4 py-16 overflow-hidden pb-72 bg-gradient-to-b from-gray-900 via-gray-900 to-indigo-950">
       {/* Subtelne tło z efektem */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
       <div className="absolute top-0 left-0 right-0 h-40 transform -translate-y-1/2 bg-purple-600/5 blur-3xl"></div>
@@ -113,13 +113,13 @@ const HomePage = () => {
           
           {/* Data wydarzenia */}
           <div className="mt-3 text-sm font-medium text-center text-gray-300">
-            do 11.04.2025
+            do 11.04.2025 20:00
           </div>
         </div>
         
         {/* Przycisk z efektem pojawiania się i animacją hover */}
         <a 
-          href="https://swmaciej.org.pl/" 
+          href="https://swmaciej.org.pl/parafialna-terenowa-droga-krzyzowa/" 
           target="_blank" 
           rel="noopener noreferrer"
           className="px-8 py-3 font-medium text-white transition-all duration-300 duration-700 transform bg-purple-600 rounded-lg shadow-md opacity-0 hover:bg-purple-700 hover:shadow-lg shadow-purple-500/20 hover:-translate-y-1 fade-in delay-400"
