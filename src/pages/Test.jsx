@@ -1,66 +1,66 @@
-import React, { useState, useEffect } from 'react';
-import { MdDownloadForOffline } from "react-icons/md";
-import roads from '../assets/data/roadsData';
-import { Eye, Map, Download, ArrowLeft } from "lucide-react";
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { SiYoutubemusic } from "react-icons/si";
+import { MdFileDownload, MdPlayArrow, MdPause, MdHeadphones, MdMenuBook } from "react-icons/md";
+import { Document, Page } from 'react-pdf';
+import { Worker, Viewer } from '@react-pdf-viewer/core';
+import '@react-pdf-viewer/core/lib/styles/index.css';
 
-// Import map components
-import { MapContainer, TileLayer, useMap, Polyline, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import * as L from 'leaflet';
-import toGeoJSON from '@mapbox/togeojson';
-
-// DODANO: Rozwiązanie problemu z ikonami Leaflet w React
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-
-let DefaultIcon = L.icon({
-  iconUrl: icon,
-  shadowUrl: iconShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34]
-});
-
-// DODANO: Ikony dla początku, końca i stacji
-let StartIcon = L.icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-  shadowUrl: iconShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34]
-});
-
-let EndIcon = L.icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-  shadowUrl: iconShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34]
-});
-
-let StationIcon = L.icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-  shadowUrl: iconShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34]
-});
-
-// DODANO: Ustawienie domyślnej ikony
-L.Marker.prototype.options.icon = DefaultIcon;
+import rozwazania from '../assets/Considerations/rozwazania.pdf';
+import rozwazaniaMP3 from '../assets/Considerations/rozwazania.rar';
+import stacja0 from '../assets/Considerations/00.mp3';
+import stacja1 from '../assets/Considerations/01.mp3';
+import stacja2 from '../assets/Considerations/02.mp3';
+import stacja3 from '../assets/Considerations/03.mp3';
+import stacja4 from '../assets/Considerations/04.mp3';
+import stacja5 from '../assets/Considerations/05.mp3';
+import stacja6 from '../assets/Considerations/06.mp3';
+import stacja7 from '../assets/Considerations/07.mp3';
+import stacja8 from '../assets/Considerations/08.mp3';
+import stacja9 from '../assets/Considerations/09.mp3';
+import stacja10 from '../assets/Considerations/10.mp3';
+import stacja11 from '../assets/Considerations/11.mp3';
+import stacja12 from '../assets/Considerations/12.mp3';
+import stacja13 from '../assets/Considerations/13.mp3';
+import stacja14 from '../assets/Considerations/14.mp3';
+import stacja99 from '../assets/Considerations/99.mp3';
 
 
 const Test = () => {
-  // Stan przechowujący ID otwartej/rozwiniętej drogi
-  const [expandedRoadId, setExpandedRoadId] = useState(null);
-  const [showMap, setShowMap] = useState(false);
-  const [selectedRoad, setSelectedRoad] = useState(null);
-  const [trackData, setTrackData] = useState(null);
-  const [waypoints, setWaypoints] = useState([]);
+  // Przykładowe dane stacji
+  const [stations, setStations] = useState([
+    { id: '☩', name: "Rozpoczęcie", audioSrc: stacja0, duration: 89 },
+    { id: 1, name: "Stacja I - Pan Jezus na śmierć skazany", audioSrc: stacja1, duration: 114 },
+    { id: 2, name: "Stacja II - Pan Jezus bierze krzyż na swoje ramiona", audioSrc: stacja2, duration: 112 },
+    { id: 3, name: "Stacja III - Pan Jezus upada po raz pierwszy", audioSrc: stacja3, duration: 94 },
+    { id: 4, name: "Stacja IV - Pan Jezus spotyka swoją Matkę", audioSrc: stacja4, duration: 128 },
+    { id: 5, name: "Stacja V - Szymon z Cyreny pomaga nieść krzyż Jezusowi", audioSrc: stacja5, duration: 109 },
+    { id: 6, name: "Stacja VI - Weronika ociera twarz Pana Jezusa", audioSrc: stacja6, duration: 122 },
+    { id: 7, name: "Stacja VII - Pan Jezus upada po raz drugi", audioSrc: stacja7, duration: 111 },
+    { id: 8, name: "Stacja VIII - Pan Jezus pociesza płaczące niewiasty", audioSrc: stacja8, duration: 133 },
+    { id: 9, name: "Stacja IX - Pan Jezus upada po raz trzeci", audioSrc: stacja9, duration: 138 },
+    { id: 10, name: "Stacja X - Pan Jezus z szat obnażony", audioSrc: stacja10, duration: 119 },
+    { id: 11, name: "Stacja XI - Pan Jezus przybity do krzyża", audioSrc: stacja11, duration: 137 },
+    { id: 12, name: "Stacja XII - Pan Jezus umiera na krzyżu", audioSrc: stacja12, duration: 117 },
+    { id: 13, name: "Stacja XIII - Pan Jezus zdjęty z krzyża", audioSrc: stacja13, duration: 134 },
+    { id: 14, name: "Stacja XIV - Pan Jezus złożony do grobu", audioSrc: stacja14, duration: 136 },
+    { id: '✠', name: "Zakończenie", audioSrc: stacja99, duration: 71 },
+  ]);
+
   
-  const navigate = useNavigate();
+  // Stan przechowujący ID otwartej/rozwiniętej stacji
+  const [expandedStationId, setExpandedStationId] = useState(null);
   
+  // Stan dla obecnie odtwarzanego audio
+  const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  
+  // Stan dla modalu z treścią rozważań
+  const [showPdfModal, setShowPdfModal] = useState(false);
+  
+  // Referencja do elementu audio
+  const audioRef = useRef(null);
+
   // Efekt do animacji pojawiania się elementów
   useEffect(() => {
     const elements = document.querySelectorAll('.fade-in');
@@ -69,370 +69,253 @@ const Test = () => {
         element.classList.add('active');
       }, 50 * index);
     });
-  }, [showMap]);
+  }, []);
+  
+  // Efekt do aktualizacji czasu odtwarzania
+  useEffect(() => {
+    if (audioRef.current) {
+      const handleTimeUpdate = () => {
+        setCurrentTime(audioRef.current.currentTime);
+      };
+      
+      const handleEnded = () => {
+        setIsPlaying(false);
+        setCurrentTime(0);
+      };
+      
+      audioRef.current.addEventListener('timeupdate', handleTimeUpdate);
+      audioRef.current.addEventListener('ended', handleEnded);
+      
+      return () => {
+        if (audioRef.current) {
+          audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
+          audioRef.current.removeEventListener('ended', handleEnded);
+        }
+      };
+    }
+  }, [currentlyPlaying]);
 
-  // Funkcja do przełączania rozwinięcia opcji pobierania
-  const toggleRoadExpand = (roadId) => {
-    setExpandedRoadId(prevId => prevId === roadId ? null : roadId);
+  // Funkcja do przełączania rozwinięcia odtwarzacza
+  const toggleStationExpand = (stationId) => {
+    if (expandedStationId === stationId) {
+      setExpandedStationId(null);
+    } else {
+      setExpandedStationId(stationId);
+      if (currentlyPlaying !== stationId) {
+        // Zatrzymaj aktualnie odtwarzane audio jeśli istnieje
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
+        setCurrentlyPlaying(stationId);
+        setIsPlaying(false);
+        setCurrentTime(0);
+      }
+    }
+  };
+  
+  // Funkcja do odtwarzania/pauzowania audio
+  const togglePlayPause = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+  
+  // Funkcja do zmiany czasu odtwarzania
+  const handleSeek = (e) => {
+    if (audioRef.current) {
+      const seekTime = (e.target.value / 100) * audioRef.current.duration;
+      audioRef.current.currentTime = seekTime;
+      setCurrentTime(seekTime);
+    }
+  };
+  
+  // Funkcja do formatowania czasu (sekundy -> MM:SS)
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Funkcja do pobierania plików
-  const handleDownload = (file, filename) => {
+  // Pobierz stację po ID
+  const getCurrentStation = () => {
+    return stations.find(station => station.id === currentlyPlaying);
+  };
+
+  // Funkcja do pobierania pliku PDF
+  const handleDownloadPDF = () => {
     const link = document.createElement('a');
-    link.href = file;
-    link.download = filename;
+    link.href = rozwazania; 
+    link.download = 'rozwazania.pdf';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  // Funkcja do parsowania KML
-  const parseKmlTrack = async (kmlFile) => {
-    try {
-      // Pobierz plik KML
-      const response = await fetch(kmlFile);
-      const kmlText = await response.text();
-      
-      
-      
-      // Parsuj KML
-      const parser = new DOMParser();
-      const kml = parser.parseFromString(kmlText, 'text/xml');
-      const geojson = toGeoJSON.kml(kml);
-      
-      // Wyciągnij współrzędne trasy (zamień [długość, szerokość] na [szerokość, długość] dla Leaflet)
-      // Szukamy placemarków z liniami
-      let coordinates = [];
-      let extractedWaypoints = [];
-      
-      geojson.features.forEach(feature => {
-        if (feature.geometry && (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString')) {
-          if (feature.geometry.type === 'LineString') {
-            coordinates = feature.geometry.coordinates.map(coord => [coord[1], coord[0]]);
-          } else if (feature.geometry.type === 'MultiLineString') {
-            coordinates = feature.geometry.coordinates[0].map(coord => [coord[1], coord[0]]);
-          }
-        }
-
-                // DODANO: Dla punktów (Placemarks)
-                if (feature.geometry && feature.geometry.type === 'Point') {
-                  const coord = feature.geometry.coordinates;
-                  extractedWaypoints.push({
-                    position: [coord[1], coord[0]],
-                    name: feature.properties.name || 'Punkt',
-                    description: feature.properties.description || '',
-                    type: determinePointType(feature.properties.name || '')
-                  });
-                }
-      });
-      
-            // DODANO: Jeśli nie znaleziono punktów, utwórz je z linii
-            if (extractedWaypoints.length === 0 && coordinates.length > 0) {
-              // Dodaj punkt startu
-              extractedWaypoints.push({
-                position: coordinates[0],
-                name: 'Start',
-                description: 'Punkt początkowy trasy',
-                type: 'start'
-              });
-              
-              // Dodaj stacje drogi
-              for (let i = 1; i < coordinates.length - 1; i++) {
-                // Dodaj tylko co n-ty punkt jako stację - można dostosować
-                if (i % Math.ceil(coordinates.length / 15) === 0) {
-                  extractedWaypoints.push({
-                    position: coordinates[i],
-                    name: `Stacja ${Math.ceil(i / (coordinates.length / 14))}`,
-                    description: `Stacja drogi krzyżowej`,
-                    type: 'station'
-                  });
-                }
-              }
-              
-              // Dodaj punkt końcowy
-              extractedWaypoints.push({
-                position: coordinates[coordinates.length - 1],
-                name: 'Koniec',
-                description: 'Punkt końcowy trasy',
-                type: 'end'
-              });
-            }
-            
-      setTrackData(coordinates);
-      setWaypoints(extractedWaypoints);
-    } catch (error) {
-      console.error('Błąd parsowania KML:', error);
-      // ZMODYFIKOWANO: W przypadku błędu, dodaj też przykładowe punkty
-      const fallbackTrack = [
-        [49.8546, 19.3438], // Andrychów
-        [49.8776, 19.3092], // przykładowe punkty
-        [49.8658, 19.6753]
-      ];
-      
-      setTrackData(fallbackTrack);
-      // DODANO: Ustaw przykładowe punkty
-      setWaypoints([
-        { position: fallbackTrack[0], name: 'Start', description: 'Punkt początkowy', type: 'start' },
-        { position: fallbackTrack[1], name: 'Stacja 7', description: 'Stacja drogi krzyżowej', type: 'station' },
-        { position: fallbackTrack[2], name: 'Koniec', description: 'Punkt końcowy', type: 'end' }
-      ]);
-    }
+  // Funkcja do pobierania plików MP3 w archiwum RAR
+  const handleDownloadMP3 = () => {
+    const link = document.createElement('a');
+    link.href = rozwazaniaMP3; 
+    link.download = 'rozwazania.rar';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
-    // DODANO: Funkcja do określania typu punktu na podstawie nazwy
-    const determinePointType = (name) => {
-      const lowerName = name.toLowerCase();
-      if (lowerName.includes('start') || lowerName.includes('początek')) {
-        return 'start';
-      } else if (lowerName.includes('koniec') || lowerName.includes('meta')) {
-        return 'end';
-      } else {
-        return 'station';
-      }
-    };
-  
-
-  // Funkcja do podglądu trasy na mapie
-  const handlePreview = (road) => {
-    setSelectedRoad(road);
-    parseKmlTrack(road.track);
-    setShowMap(true);
-  };
-
-  // Funkcja do powrotu z widoku mapy do listy
-  const handleBackToList = () => {
-    setShowMap(false);
-    setSelectedRoad(null);
-    setTrackData(null);
-    setWaypoints([]);
-  };
-
-  // Komponent KmlTrack do wyświetlania śladu KML na mapie
-  const KmlTrack = ({ trackData, waypoints }) => {
-    const map = useMap();
-    
-    useEffect(() => {
-      if (trackData && trackData.length > 0) {
-        // Centrowanie mapy na trasie
-        const bounds = trackData.reduce(
-          (bounds, point) => bounds.extend(point),
-          L.latLngBounds(trackData[0], trackData[0])
-        );
-        map.fitBounds(bounds, { padding: [50, 50] });
-      }
-    }, [map, trackData]);
-
-    const getMarkerIcon = (type) => {
-      switch (type) {
-        case 'start':
-          return StartIcon;
-        case 'end':
-          return EndIcon;
-        case 'station':
-          return StationIcon;
-        default:
-          return DefaultIcon;
-      }
-    };
-
-    return (
-      <>
-        {trackData && trackData.length > 0 && (
-          <Polyline 
-            positions={trackData} 
-            color="#8b5cf6" 
-            weight={5} 
-            opacity={0.8}
-          />
-        )}
-        
-        {/* DODANO: Wyświetlanie punktów/markerów */}
-        {waypoints && waypoints.map((waypoint, index) => (
-          <Marker 
-            key={index}
-            position={waypoint.position}
-            icon={getMarkerIcon(waypoint.type)}
-          >
-            <Popup>
-              <div>
-                <h3 className="font-bold">{waypoint.name}</h3>
-                <p>{waypoint.description}</p>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </>
-    );
+  // Funkcja do otwierania modalu z treścią rozważań
+  const togglePdfModal = () => {
+    setShowPdfModal(!showPdfModal);
   };
 
   return (
-    <div className="relative flex flex-col items-center min-h-screen px-4 py-16 overflow-hidden pb-36 bg-gradient-to-b from-gray-900 via-gray-900 to-indigo-950">
+    <div className="relative flex flex-col items-center min-h-screen px-4 py-16 overflow-hidden bg-gradient-to-b from-gray-900 via-gray-900 to-indigo-950">
       {/* Subtelne tło z efektem */}
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
       <div className="absolute top-0 left-0 right-0 h-40 transform -translate-y-1/2 bg-purple-600/5 blur-3xl"></div>
+      
+      {/* Element audio (ukryty) */}
+      <audio 
+        ref={audioRef} 
+        src={currentlyPlaying ? getCurrentStation()?.audioSrc : ''} 
+        preload="metadata"
+      />
       
       {/* Zawartość strony z animacją */}
       <div className="relative z-10 flex flex-col items-center w-full max-w-4xl">
         {/* Tytuł z efektem pojawiania się */}
         <h1 className="mb-8 text-2xl font-bold tracking-wide text-center text-white transition-all duration-700 opacity-0 md:text-3xl lg:text-4xl fade-in">
-          <span className="block mb-1">TRASY DRÓG KRZYŻOWYCH</span>
+          <span className="block mb-1">ROZWAŻANIA DROGI KRZYŻOWEJ</span>
         </h1>
         
-        {!showMap ? (
-          <>
-            {/* Podtytuł */}
-            <p className="max-w-lg mb-8 text-center text-gray-300 transition-all duration-700 delay-100 opacity-0 fade-in">
-              Poniżej znajdziesz listę parafialnych terenowych dróg krzyżowych. 
-              Kliknij na ikonę pobierania, aby zobaczyć opcje pobrania opisu i śladu trasy.
-            </p>
+        {/* Podtytuł i przyciski pobierania */}
+        <div className="w-full mb-8 text-center transition-all duration-700 delay-100 opacity-0 fade-in">
+          <p className="max-w-lg mx-auto mb-6 text-gray-300">
+            Poniżej znajdziesz rozważania drogi krzyżowej do samodzielnego odtworzenia lub pobrania.
+          </p>
+          
+          <div className="flex flex-col items-center justify-center gap-4 mb-5 md:flex-row">
+            <button 
+              onClick={handleDownloadPDF}
+              className="inline-flex items-center px-6 py-3 font-medium text-white transition-all duration-300 transform bg-purple-600 rounded-lg shadow-md hover:bg-purple-700 hover:shadow-lg shadow-purple-500/20 hover:-translate-y-1"
+            >
+              <MdFileDownload className="mr-2 text-xl" /> Pobierz rozważania PDF
+            </button>
             
-            {/* Lista dróg */}
-            <div className="w-full mb-20 transition-all duration-700 delay-200 opacity-0 fade-in">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {roads.map((road, index) => (
-                  <div 
-                    key={road.id}
-                    className={`relative transition-all duration-300 border shadow-lg bg-gray-800/50 backdrop-blur-md rounded-xl border-purple-500/10 hover:border-purple-500/30 hover:shadow-purple-500/10 opacity-0 fade-in overflow-hidden`}
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    {/* Główny kafelek z nazwą i numerem */}
-                    <div className="flex items-center justify-between p-4">
-                      <div className="flex items-center">
-                        <div className="flex items-center justify-center w-10 h-10 mr-4 text-lg font-bold text-white border rounded-full bg-purple-600/20 backdrop-blur-sm border-purple-500/20">
-                          {road.id}
-                        </div>
-                        <h2 className="text-lg font-medium text-white">{road.name}</h2>
-                      </div>
-                      
-                      <button 
-                        onClick={() => toggleRoadExpand(road.id)}
-                        className="flex items-center justify-center w-10 h-10 text-2xl text-white transition-transform duration-300 rounded-full hover:bg-purple-600/20"
-                        style={{ transform: expandedRoadId === road.id ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                      >
-                        <MdDownloadForOffline />
-                      </button>
-                    </div>
-                    
-                    {/* Informacje o trasie */}
-                    <div className="px-6 mb-3 text-sm text-gray-200">
-                      <p className="mb-1"><span className="font-medium">Przebieg trasy:</span> {road.shortdescription}</p>
-                      <p><span className="font-medium">Dystans:</span> {road.KM}<> km</></p>
-                    </div>
-                    
-                    {/* Rozwijane opcje pobierania */}
-                    <div 
-                      className="transition-all duration-300 border-t bg-gray-700/30 border-purple-500/10"
-                      style={{ 
-                        maxHeight: expandedRoadId === road.id ? '200px' : '0',
-                        opacity: expandedRoadId === road.id ? 1 : 0,
-                        overflow: 'hidden',
-                        padding: expandedRoadId === road.id ? '12px' : '0 12px'
-                      }}
-                    >
-                      {/* Przyciski pobierania */}
-                      <div className="grid grid-cols-3 gap-2">
-                        <button 
-                          onClick={() => handleDownload(road.description, `road${road.id}.pdf`)}
-                          className="flex items-center justify-center w-full p-3 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50 hover:-translate-y-1"
-                        >
-                          <Download className="w-4 h-4 mr-2" /> Opis
-                        </button>
-                        <button 
-                          onClick={() => handleDownload(road.track, `road${road.id}.kml`)}
-                          className="flex items-center justify-center w-full p-3 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50 hover:-translate-y-1"
-                        >
-                          <Download className="w-4 h-4 mr-2" />Ślad
-                        </button>
-                        {/* Podgląd */}
-                        <button 
-                          onClick={() => handlePreview(road)}
-                          className="flex items-center justify-center w-full p-3 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-blue-600/30 border-blue-500/30 hover:bg-blue-600/50 hover:-translate-y-1"
-                        >
-                          <Eye className="w-5 h-5 mr-0" /> Podgląd
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </>
-        ) : (
-          // Widok mapy po kliknięciu Podgląd
-          <div className="w-full transition-all duration-700 opacity-0 fade-in">
+            <button 
+              onClick={handleDownloadMP3}
+              className="inline-flex items-center px-6 py-3 font-medium text-white transition-all duration-300 transform bg-indigo-600 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg shadow-indigo-500/20 hover:-translate-y-1"
+            >
+              <MdHeadphones className="mr-2 text-xl" /> Pobierz rozważania MP3
+            </button>
             
-            {/* Przycisk powrotu */}
-            <div className="flex items-center justify-between mb-4">
-              <button 
-                onClick={handleBackToList}
-                className="flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" /> Powrót do listy
-              </button>
-              {selectedRoad && (
-                <div className="px-4 py-2 text-white rounded-lg bg-gray-800/70 backdrop-blur-sm">
-                  <span className="font-medium">{selectedRoad.name}</span>
-                </div>
-              )}
-            </div>
-            
-            {/* Mapa z trasą */}
-            <div className="w-full h-[70vh] rounded-xl overflow-hidden border border-purple-500/20 shadow-lg">
-              <MapContainer 
-                center={[49.8546, 19.3438]} // Domyślny widok na Andrychów
-                zoom={12} 
-                style={{ width: '100%', height: '100%' }}
-                zoomControl={false}
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                {trackData && <KmlTrack trackData={trackData} />}
-                {trackData && <KmlTrack trackData={trackData} waypoints={waypoints} />}
-              </MapContainer>
-            </div>
-            
-            {/* Informacje o trasie */}
-            {selectedRoad && (
-              <div className="p-4 mt-4 border bg-gray-800/50 backdrop-blur-md rounded-xl border-purple-500/10">
-                <h2 className="mb-2 text-xl font-medium text-white">Informacje o trasie</h2>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div>
-                    <p className="text-gray-300"><span className="font-medium text-white">Nazwa:</span> {selectedRoad.name}</p>
-                    <p className="text-gray-300"><span className="font-medium text-white">Przebieg:</span> {selectedRoad.shortdescription}</p>
-                    <p className="text-gray-300"><span className="font-medium text-white">Dystans:</span> {selectedRoad.KM} km</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-300"><span className="font-medium text-white">Cel:</span> {selectedRoad.destination}</p>
-                    <p className="text-gray-300"><span className="font-medium text-white">Pętla:</span> {selectedRoad.loop ? 'Tak' : 'Nie'}</p>
-                  </div>
-                </div>
-                <div className="flex mt-4 space-x-3">
-                  <button 
-                    onClick={() => handleDownload(selectedRoad.description, `road${selectedRoad.id}.pdf`)}
-                    className="flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50"
-                  >
-                    <Download className="w-4 h-4 mr-2" /> Pobierz opis
-                  </button>
-                  <button 
-                    onClick={() => handleDownload(selectedRoad.track, `road${selectedRoad.id}.kml`)}
-                    className="flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-300 border rounded-lg bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50"
-                  >
-                    <Download className="w-4 h-4 mr-2" /> Pobierz ślad
-                  </button>
-                </div>
-              </div>
-            )}
+            <button 
+              onClick={togglePdfModal}
+              className="inline-flex items-center px-6 py-3 font-medium text-white transition-all duration-300 transform bg-teal-600 rounded-lg shadow-md hover:bg-teal-700 hover:shadow-lg shadow-teal-500/20 hover:-translate-y-1"
+            >
+              <MdMenuBook className="mr-2 text-xl" /> Czytaj rozważania
+            </button>
           </div>
-        )}
+        </div>
+        
+        {/* Lista stacji */}
+        <div className="w-full mb-20 transition-all duration-700 delay-200 opacity-0 fade-in">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {stations.map((station, index) => (
+              <div 
+                key={station.id}
+                className={`relative transition-all duration-300 border shadow-lg bg-gray-800/50 backdrop-blur-md rounded-xl border-purple-500/10 hover:border-purple-500/30 hover:shadow-purple-500/10 opacity-0 fade-in overflow-hidden`}
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                {/* Główny kafelek z nazwą stacji */}
+                <div className="flex items-center justify-between p-4">
+                  <div className="flex items-center">
+                    <div className="flex items-center justify-center w-10 h-10 mr-4 text-lg font-bold text-white border rounded-full bg-purple-600/20 backdrop-blur-sm border-purple-500/20">
+                      {station.id}
+                    </div>
+                    <h2 className="text-lg font-medium text-white">{station.name}</h2>
+                  </div>
+                  <button 
+                    onClick={() => toggleStationExpand(station.id)}
+                    className="flex items-center justify-center w-10 h-10 text-xl text-white transition-transform duration-300 rounded-full hover:bg-purple-600/20"
+                    style={{ transform: expandedStationId === station.id ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                  >
+                    <SiYoutubemusic />
+                  </button>
+                </div>
+                
+                {/* Rozwijany odtwarzacz audio */}
+                <div 
+                  className="flex flex-col p-3 transition-all duration-300 border-t bg-gray-700/30 border-purple-500/10"
+                  style={{ 
+                    maxHeight: expandedStationId === station.id ? '120px' : '0',
+                    opacity: expandedStationId === station.id ? 1 : 0,
+                    overflow: 'hidden',
+                    padding: expandedStationId === station.id ? '12px' : '0 12px'
+                  }}
+                >
+                  {/* Kontrolki odtwarzacza */}
+                  <div className="flex items-center mb-3">
+                    <button 
+                      onClick={togglePlayPause}
+                      className="flex items-center justify-center w-10 h-10 mr-3 text-2xl text-white transition-all duration-300 border rounded-full bg-purple-600/30 border-purple-500/30 hover:bg-purple-600/50"
+                    >
+                      {isPlaying && currentlyPlaying === station.id ? <MdPause /> : <MdPlayArrow />}
+                    </button>
+                    
+                    <div className="text-sm font-medium text-white">
+                      {formatTime(currentlyPlaying === station.id ? currentTime : 0)} / {formatTime(station.duration)}
+                    </div>
+                  </div>
+                  
+                  {/* Pasek postępu */}
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    value={currentlyPlaying === station.id ? (currentTime / station.duration * 100) || 0 : 0} 
+                    onChange={handleSeek}
+                    className="w-full h-2 bg-gray-600 rounded-full appearance-none cursor-pointer accent-purple-600 focus:outline-none"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
       
+{/* Modal z treścią rozważań */}
+{showPdfModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+    <div className="relative w-full max-w-full md:max-w-4xl p-2 md:p-4 mx-2 md:mx-4 bg-gray-800 rounded-lg shadow-xl h-[90vh] md:h-3/4">
+      <button 
+        onClick={togglePdfModal}
+        className="absolute flex items-center justify-center w-8 h-8 text-gray-300 bg-gray-700 rounded-full -top-3 -right-3 hover:bg-gray-600"
+      >
+        ✕
+      </button>
+      <h2 className="mb-2 text-lg font-bold text-white md:mb-4 md:text-xl">Rozważania Drogi Krzyżowej</h2>
+      <div className="h-[calc(100%-40px)] overflow-y-auto">
+        <iframe
+          src={rozwazania}
+          className="w-full h-full min-h-[300px] md:min-h-[500px] border-0 rounded"
+          title="Rozważania Drogi Krzyżowej PDF"
+          style={{ maxWidth: '100%', height: '100%' }}
+        />
+      </div>
+    </div>
+  </div>
+)}
       
       {/* Dekoracyjny element na dole */}
       <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black to-transparent opacity-40"></div>
     </div>
   );
+
 };
 
 export default Test;

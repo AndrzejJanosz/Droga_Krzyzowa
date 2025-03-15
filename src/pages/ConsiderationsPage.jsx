@@ -1,29 +1,52 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SiYoutubemusic } from "react-icons/si";
-import { MdFileDownload, MdPlayArrow, MdPause } from "react-icons/md";
+import { MdFileDownload, MdPlayArrow, MdPause, MdHeadphones, MdMenuBook } from "react-icons/md";
+import { Document, Page } from 'react-pdf';
+import { Worker, Viewer } from '@react-pdf-viewer/core';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+
 import rozwazania from '../assets/Considerations/rozwazania.pdf';
-import stacja1 from '../assets/Considerations/stacja1.mp3';
+import rozwazaniaMP3 from '../assets/Considerations/rozwazania.rar';
+import stacja0 from '../assets/Considerations/00.mp3';
+import stacja1 from '../assets/Considerations/01.mp3';
+import stacja2 from '../assets/Considerations/02.mp3';
+import stacja3 from '../assets/Considerations/03.mp3';
+import stacja4 from '../assets/Considerations/04.mp3';
+import stacja5 from '../assets/Considerations/05.mp3';
+import stacja6 from '../assets/Considerations/06.mp3';
+import stacja7 from '../assets/Considerations/07.mp3';
+import stacja8 from '../assets/Considerations/08.mp3';
+import stacja9 from '../assets/Considerations/09.mp3';
+import stacja10 from '../assets/Considerations/10.mp3';
+import stacja11 from '../assets/Considerations/11.mp3';
+import stacja12 from '../assets/Considerations/12.mp3';
+import stacja13 from '../assets/Considerations/13.mp3';
+import stacja14 from '../assets/Considerations/14.mp3';
+import stacja99 from '../assets/Considerations/99.mp3';
 
 
 const ConsiderationsPage = () => {
   // Przykładowe dane stacji
   const [stations, setStations] = useState([
-    { id: 1, name: "Stacja I - Pan Jezus na śmierć skazany", audioSrc: stacja1, duration: 219 },
-    { id: 2, name: "Stacja II - Pan Jezus bierze krzyż na swoje ramiona", audioSrc: "/assets/audio/stacja2.mp3", duration: 198 },
-    { id: 3, name: "Stacja III - Pan Jezus upada po raz pierwszy", audioSrc: "/assets/audio/stacja3.mp3", duration: 210 },
-    { id: 4, name: "Stacja IV - Pan Jezus spotyka swoją Matkę", audioSrc: "/assets/audio/stacja4.mp3", duration: 223 },
-    { id: 5, name: "Stacja V - Szymon z Cyreny pomaga nieść krzyż Jezusowi", audioSrc: "/assets/audio/stacja5.mp3", duration: 215 },
-    { id: 6, name: "Stacja VI - Weronika ociera twarz Pana Jezusa", audioSrc: "/assets/audio/stacja6.mp3", duration: 205 },
-    { id: 7, name: "Stacja VII - Pan Jezus upada po raz drugi", audioSrc: "/assets/audio/stacja7.mp3", duration: 228 },
-    { id: 8, name: "Stacja VIII - Pan Jezus pociesza płaczące niewiasty", audioSrc: "/assets/audio/stacja8.mp3", duration: 218 },
-    { id: 9, name: "Stacja IX - Pan Jezus upada po raz trzeci", audioSrc: "/assets/audio/stacja9.mp3", duration: 207 },
-    { id: 10, name: "Stacja X - Pan Jezus z szat obnażony", audioSrc: "/assets/audio/stacja10.mp3", duration: 197 },
-    { id: 11, name: "Stacja XI - Pan Jezus przybity do krzyża", audioSrc: "/assets/audio/stacja11.mp3", duration: 230 },
-    { id: 12, name: "Stacja XII - Pan Jezus umiera na krzyżu", audioSrc: "/assets/audio/stacja12.mp3", duration: 245 },
-    { id: 13, name: "Stacja XIII - Pan Jezus zdjęty z krzyża", audioSrc: "/assets/audio/stacja13.mp3", duration: 217 },
-    { id: 14, name: "Stacja XIV - Pan Jezus złożony do grobu", audioSrc: "/assets/audio/stacja14.mp3", duration: 225 },
+    { id: '☩', name: "Rozpoczęcie", audioSrc: stacja0, duration: 89 },
+    { id: 1, name: "Stacja I - Pan Jezus na śmierć skazany", audioSrc: stacja1, duration: 114 },
+    { id: 2, name: "Stacja II - Pan Jezus bierze krzyż na swoje ramiona", audioSrc: stacja2, duration: 112 },
+    { id: 3, name: "Stacja III - Pan Jezus upada po raz pierwszy", audioSrc: stacja3, duration: 94 },
+    { id: 4, name: "Stacja IV - Pan Jezus spotyka swoją Matkę", audioSrc: stacja4, duration: 128 },
+    { id: 5, name: "Stacja V - Szymon z Cyreny pomaga nieść krzyż Jezusowi", audioSrc: stacja5, duration: 109 },
+    { id: 6, name: "Stacja VI - Weronika ociera twarz Pana Jezusa", audioSrc: stacja6, duration: 122 },
+    { id: 7, name: "Stacja VII - Pan Jezus upada po raz drugi", audioSrc: stacja7, duration: 111 },
+    { id: 8, name: "Stacja VIII - Pan Jezus pociesza płaczące niewiasty", audioSrc: stacja8, duration: 133 },
+    { id: 9, name: "Stacja IX - Pan Jezus upada po raz trzeci", audioSrc: stacja9, duration: 138 },
+    { id: 10, name: "Stacja X - Pan Jezus z szat obnażony", audioSrc: stacja10, duration: 119 },
+    { id: 11, name: "Stacja XI - Pan Jezus przybity do krzyża", audioSrc: stacja11, duration: 137 },
+    { id: 12, name: "Stacja XII - Pan Jezus umiera na krzyżu", audioSrc: stacja12, duration: 117 },
+    { id: 13, name: "Stacja XIII - Pan Jezus zdjęty z krzyża", audioSrc: stacja13, duration: 134 },
+    { id: 14, name: "Stacja XIV - Pan Jezus złożony do grobu", audioSrc: stacja14, duration: 136 },
+    { id: '✠', name: "Zakończenie", audioSrc: stacja99, duration: 71 },
   ]);
 
+  
   // Stan przechowujący ID otwartej/rozwiniętej stacji
   const [expandedStationId, setExpandedStationId] = useState(null);
   
@@ -31,6 +54,9 @@ const ConsiderationsPage = () => {
   const [currentlyPlaying, setCurrentlyPlaying] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
+  
+  // Stan dla modalu z treścią rozważań
+  const [showPdfModal, setShowPdfModal] = useState(false);
   
   // Referencja do elementu audio
   const audioRef = useRef(null);
@@ -124,11 +150,26 @@ const ConsiderationsPage = () => {
   // Funkcja do pobierania pliku PDF
   const handleDownloadPDF = () => {
     const link = document.createElement('a');
-    link.href = rozwazania;
+    link.href = rozwazania; 
     link.download = 'rozwazania.pdf';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // Funkcja do pobierania plików MP3 w archiwum RAR
+  const handleDownloadMP3 = () => {
+    const link = document.createElement('a');
+    link.href = rozwazaniaMP3; 
+    link.download = 'rozwazania.rar';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Funkcja do otwierania modalu z treścią rozważań
+  const togglePdfModal = () => {
+    setShowPdfModal(!showPdfModal);
   };
 
   return (
@@ -151,18 +192,34 @@ const ConsiderationsPage = () => {
           <span className="block mb-1">ROZWAŻANIA DROGI KRZYŻOWEJ</span>
         </h1>
         
-        {/* Podtytuł i przycisk pobierania PDF */}
+        {/* Podtytuł i przyciski pobierania */}
         <div className="w-full mb-8 text-center transition-all duration-700 delay-100 opacity-0 fade-in">
           <p className="max-w-lg mx-auto mb-6 text-gray-300">
             Poniżej znajdziesz rozważania drogi krzyżowej do samodzielnego odtworzenia lub pobrania.
           </p>
           
-          <button 
-            onClick={handleDownloadPDF}
-            className="inline-flex items-center px-8 py-3 mb-8 font-medium text-white transition-all duration-300 transform bg-purple-600 rounded-lg shadow-md hover:bg-purple-700 hover:shadow-lg shadow-purple-500/20 hover:-translate-y-1"
-          >
-            <MdFileDownload className="mr-2 text-xl" /> Pobierz rozważania PDF
-          </button>
+          <div className="flex flex-col items-center justify-center gap-4 mb-5 md:flex-row">
+            <button 
+              onClick={handleDownloadPDF}
+              className="inline-flex items-center px-6 py-3 font-medium text-white transition-all duration-300 transform bg-purple-600 rounded-lg shadow-md hover:bg-purple-700 hover:shadow-lg shadow-purple-500/20 hover:-translate-y-1"
+            >
+              <MdFileDownload className="mr-2 text-xl" /> Pobierz rozważania PDF
+            </button>
+            
+            <button 
+              onClick={handleDownloadMP3}
+              className="inline-flex items-center px-6 py-3 font-medium text-white transition-all duration-300 transform bg-indigo-600 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg shadow-indigo-500/20 hover:-translate-y-1"
+            >
+              <MdHeadphones className="mr-2 text-xl" /> Pobierz rozważania MP3
+            </button>
+            
+            <button 
+              onClick={togglePdfModal}
+              className="inline-flex items-center px-6 py-3 font-medium text-white transition-all duration-300 transform bg-teal-600 rounded-lg shadow-md hover:bg-teal-700 hover:shadow-lg shadow-teal-500/20 hover:-translate-y-1"
+            >
+              <MdMenuBook className="mr-2 text-xl" /> Czytaj rozważania
+            </button>
+          </div>
         </div>
         
         {/* Lista stacji */}
@@ -231,10 +288,34 @@ const ConsiderationsPage = () => {
         </div>
       </div>
       
+{/* Modal z treścią rozważań */}
+{showPdfModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+    <div className="relative w-full max-w-full md:max-w-4xl p-2 md:p-4 mx-2 md:mx-4 bg-gray-800 rounded-lg shadow-xl h-[90vh] md:h-3/4">
+      <button 
+        onClick={togglePdfModal}
+        className="absolute flex items-center justify-center w-8 h-8 text-gray-300 bg-gray-700 rounded-full -top-3 -right-3 hover:bg-gray-600"
+      >
+        ✕
+      </button>
+      <h2 className="mb-2 text-lg font-bold text-white md:mb-4 md:text-xl">Rozważania Drogi Krzyżowej</h2>
+      <div className="h-[calc(100%-40px)] overflow-y-auto">
+        <iframe
+          src={rozwazania}
+          className="w-full h-full min-h-[300px] md:min-h-[500px] border-0 rounded"
+          title="Rozważania Drogi Krzyżowej PDF"
+          style={{ maxWidth: '100%', height: '100%' }}
+        />
+      </div>
+    </div>
+  </div>
+)}
+      
       {/* Dekoracyjny element na dole */}
       <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black to-transparent opacity-40"></div>
     </div>
   );
+
 };
 
 export default ConsiderationsPage;

@@ -82,7 +82,7 @@ const RoadPage = () => {
 const handleDownload = (file, road, fileType) => {
   // Utwórz nazwę pliku zawierającą nazwę drogi i id
   const fileExtension = fileType.toLowerCase(); // pdf lub kml
-  const newFilename = `${road.name}_.${fileExtension}`;
+  const newFilename = `${road.name}_${road.id}.${fileExtension}`;
   
   const link = document.createElement('a');
   link.href = file;
@@ -294,7 +294,7 @@ const handleDownload = (file, road, fileType) => {
             {/* Podtytuł */}
             <p className="max-w-lg mb-8 text-center text-gray-300 transition-all duration-700 delay-100 opacity-0 fade-in">
             Poniżej znajdziesz listę parafialnych terenowych dróg krzyżowych. 
-            <span className="font-semibold text-purple-500"> Kliknij na ikonę pobierania </span>, aby zobaczyć opcje pobrania opisu i śladu dróg.
+            <span className="font-semibold text-purple-500">Kliknij na ikonę pobierania</span>, aby zobaczyć opcje <span className="font-bold">podglądu</span> oraz <span className="font-bold">pobrania</span> śladu i opisu dróg.
             
               </p>
              
@@ -334,7 +334,10 @@ const handleDownload = (file, road, fileType) => {
                     
                     {/* Informacje o trasie */}
                     <div className="px-6 mb-3 text-sm text-gray-200">
-                      <p className="mb-1"><span className="font-medium">Przebieg drogi:</span> {road.shortdescription}</p>
+                    <p className="mb-1">
+                      <span className="font-medium">Przebieg drogi:  </span> 
+                      <span className="text-gray-500 opacity-75">{road.shortdescription}</span>
+                    </p>
                       <p>
                         <span className="font-medium">Dystans: </span> 
                         <span className="text-purple-500"> {road.KM}</span> <span className="text-purple-500">km</span>
@@ -436,7 +439,7 @@ const handleDownload = (file, road, fileType) => {
                   <div>
                     <p className="text-gray-300"><span className="font-medium text-white">Cel:</span> {selectedRoad.destination}</p>
                     <p className="text-gray-300"><span className="font-medium text-white">Pętla:</span> {selectedRoad.loop ? 'Tak' : 'Nie'}</p>
-                    <span className="font-medium text-white">Parafia: </span>
+                    <span className="font-medium text-white">Start: </span>
                     <div className="mt-0.5 px-1 py-0.5 text-xs text-white/80 bg-purple-600/20 backdrop-blur-sm rounded-md border border-purple-500/20 max-w-fit">
                             <span className="text-2xs">{selectedRoad.parish}</span>
                           </div>
