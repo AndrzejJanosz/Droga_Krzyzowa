@@ -26,22 +26,22 @@ import stacja99 from '../assets/Considerations/99.mp3';
 const ConsiderationsPage = () => {
   // Przykładowe dane stacji
   const [stations, setStations] = useState([
-    { id: '☩', name: "Rozpoczęcie", audioSrc: stacja0, duration: 89 },
-    { id: 1, name: "Stacja I - Pan Jezus na śmierć skazany", audioSrc: stacja1, duration: 114 },
-    { id: 2, name: "Stacja II - Pan Jezus bierze krzyż na swoje ramiona", audioSrc: stacja2, duration: 112 },
-    { id: 3, name: "Stacja III - Pan Jezus upada po raz pierwszy", audioSrc: stacja3, duration: 94 },
-    { id: 4, name: "Stacja IV - Pan Jezus spotyka swoją Matkę", audioSrc: stacja4, duration: 128 },
-    { id: 5, name: "Stacja V - Szymon z Cyreny pomaga nieść krzyż Jezusowi", audioSrc: stacja5, duration: 109 },
-    { id: 6, name: "Stacja VI - Weronika ociera twarz Pana Jezusa", audioSrc: stacja6, duration: 122 },
-    { id: 7, name: "Stacja VII - Pan Jezus upada po raz drugi", audioSrc: stacja7, duration: 111 },
-    { id: 8, name: "Stacja VIII - Pan Jezus pociesza płaczące niewiasty", audioSrc: stacja8, duration: 133 },
-    { id: 9, name: "Stacja IX - Pan Jezus upada po raz trzeci", audioSrc: stacja9, duration: 138 },
-    { id: 10, name: "Stacja X - Pan Jezus z szat obnażony", audioSrc: stacja10, duration: 119 },
-    { id: 11, name: "Stacja XI - Pan Jezus przybity do krzyża", audioSrc: stacja11, duration: 137 },
-    { id: 12, name: "Stacja XII - Pan Jezus umiera na krzyżu", audioSrc: stacja12, duration: 117 },
-    { id: 13, name: "Stacja XIII - Pan Jezus zdjęty z krzyża", audioSrc: stacja13, duration: 134 },
-    { id: 14, name: "Stacja XIV - Pan Jezus złożony do grobu", audioSrc: stacja14, duration: 136 },
-    { id: '✠', name: "Zakończenie", audioSrc: stacja99, duration: 71 },
+    { id: '☩', name: "Rozpoczęcie", audioSrc: stacja0, duration: 108 },
+    { id: 1, name: "Stacja I - Pan Jezus na śmierć skazany", audioSrc: stacja1, duration: 145 },
+    { id: 2, name: "Stacja II - Pan Jezus bierze krzyż na swoje ramiona", audioSrc: stacja2, duration: 140 },
+    { id: 3, name: "Stacja III - Pan Jezus upada po raz pierwszy", audioSrc: stacja3, duration: 119 },
+    { id: 4, name: "Stacja IV - Pan Jezus spotyka swoją Matkę", audioSrc: stacja4, duration: 161 },
+    { id: 5, name: "Stacja V - Szymon z Cyreny pomaga nieść krzyż Jezusowi", audioSrc: stacja5, duration: 136 },
+    { id: 6, name: "Stacja VI - Weronika ociera twarz Pana Jezusa", audioSrc: stacja6, duration: 144 },
+    { id: 7, name: "Stacja VII - Pan Jezus upada po raz drugi", audioSrc: stacja7, duration: 131 },
+    { id: 8, name: "Stacja VIII - Pan Jezus pociesza płaczące niewiasty", audioSrc: stacja8, duration: 157 },
+    { id: 9, name: "Stacja IX - Pan Jezus upada po raz trzeci", audioSrc: stacja9, duration: 157 },
+    { id: 10, name: "Stacja X - Pan Jezus z szat obnażony", audioSrc: stacja10, duration: 144 },
+    { id: 11, name: "Stacja XI - Pan Jezus przybity do krzyża", audioSrc: stacja11, duration: 153 },
+    { id: 12, name: "Stacja XII - Pan Jezus umiera na krzyżu", audioSrc: stacja12, duration: 141 },
+    { id: 13, name: "Stacja XIII - Pan Jezus zdjęty z krzyża", audioSrc: stacja13, duration: 143 },
+    { id: 14, name: "Stacja XIV - Pan Jezus złożony do grobu", audioSrc: stacja14, duration: 162 },
+    { id: '✠', name: "Zakończenie", audioSrc: stacja99, duration: 84 },
   ]);
 
   
