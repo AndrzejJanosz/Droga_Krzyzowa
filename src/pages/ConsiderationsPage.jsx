@@ -192,8 +192,11 @@ const ConsiderationsPage = () => {
         
         {/* Podtytuł i przyciski pobierania */}
         <div className="w-full mb-8 text-center transition-all duration-700 delay-100 opacity-0 fade-in">
-          <p className="max-w-lg mx-auto mb-6 text-gray-300">
+          <p className="max-w-lg mx-auto mb-1 text-gray-300">
             Poniżej znajdziesz rozważania drogi krzyżowej do samodzielnego odtworzenia lub pobrania.
+          </p>
+          <p className="max-w-lg mx-auto mb-6 text-gray-300">
+            Autor rozważań: <span className="text-purple-600">Ks. Wojciech Węgrzyniak</span>
           </p>
           
           <div className="flex flex-col items-center justify-center gap-4 mb-5 md:flex-row">
