@@ -4,7 +4,7 @@ import { MdFileDownload, MdPlayArrow, MdPause, MdHeadphones, MdMenuBook } from "
 
 
 import rozwazania from '../assets/Considerations/rozwazania.pdf';
-import rozwazaniaMP3 from '../assets/Considerations/rozwazania.rar';
+import rozwazaniaMP3 from '../assets/Considerations/Rozwazania.rar';
 import stacja0 from '../assets/Considerations/00.mp3';
 import stacja1 from '../assets/Considerations/01.mp3';
 import stacja2 from '../assets/Considerations/02.mp3';
