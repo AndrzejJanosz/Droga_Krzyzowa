@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SiYoutubemusic } from "react-icons/si";
 import { MdFileDownload, MdPlayArrow, MdPause, MdHeadphones, MdMenuBook } from "react-icons/md";
-import { Document, Page } from 'react-pdf';
-import { Worker, Viewer } from '@react-pdf-viewer/core';
-import '@react-pdf-viewer/core/lib/styles/index.css';
+
+
 
 import rozwazania from '../assets/Considerations/rozwazania.pdf';
 import rozwazaniaMP3 from '../assets/Considerations/rozwazania.rar';
